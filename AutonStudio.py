@@ -11,9 +11,10 @@ if __name__ == '__main__':
 
     pathInfo = sg.Text('None Selected', key='-PATH_INFO-', size=[50, 1])
 
-    field = sg.Graph(canvas_size=[600, 600], graph_bottom_left=[0, 0], graph_top_right=[600, 600], background_color='#BAB8B8', key='-FIELD-', enable_events=True, drag_submits=True)
+    # Each inch is five pixels
+    field = sg.Graph(canvas_size=[720, 720], graph_bottom_left=[0, 0], graph_top_right=[720, 720], background_color='#BAB8B8', key='-FIELD-', enable_events=True)
 
-    col = [[sg.Button('Set Start Point')],
+    col = [[sg.Button('Set Start Point', key='-START_POINT_BUTTON-')],
            [sg.Button('Add Point to Path')],
            [sg.Button('Add Turn')],
            [sg.Button('Add Robot Operation')],
@@ -31,10 +32,13 @@ if __name__ == '__main__':
     window.finalize()
 
     for x in range(1, 6):
-        field.draw_line([100*x, 600], [100*x, 0], 'black')
-        field.draw_line([0, 100*x], [600, 100*x], 'black')
+        field.draw_line([120*x, 720], [120*x, 0], 'black')
+        field.draw_line([0, 120*x], [720, 120*x], 'black')
 
     # f = open("testFile.txt", "x") This can be used to create a file. Very easy. Nice.
+
+    selectingStartPoint = False
+    startPoint_circle = None
 
     while True:  # Event Loop
         event, values = window.read()  # can also be written as event, values = window()
@@ -45,9 +49,19 @@ if __name__ == '__main__':
         print()
         if event is None or event == 'Exit':
             break
+
         for p in Paths:
             if len(values['-PATH_LIST-']) > 0 and values['-PATH_LIST-'][0] == p and event == 'Edit Path':
                 window['-PATH_INFO-'].update(p)
+
+        if event == '-START_POINT_BUTTON-':
+            selectingStartPoint = True
+
+        if selectingStartPoint:
+            if event == '-FIELD-':
+                field.delete_figure(startPoint_circle)
+                startPoint_circle = field.draw_circle([values['-FIELD-'][0], values['-FIELD-'][1]], 5)
+                selectingStartPoint = False
 
 
     window.close()
