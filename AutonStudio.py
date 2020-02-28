@@ -41,7 +41,8 @@ if __name__ == '__main__':
     selectingStartPoint = False
     addingPoint = False;
     startPoint_circle = None
-    points = []
+    startPoint_line = None
+    points = [None]
 
 
     while True:  # Event Loop
@@ -65,7 +66,7 @@ if __name__ == '__main__':
             if event == '-FIELD-':
                 field.delete_figure(startPoint_circle)
                 startPoint_circle = field.draw_circle([values['-FIELD-'][0], values['-FIELD-'][1]], 5)
-                points.append([values['-FIELD-'][0], values['-FIELD-'][1]])
+                points[0] = ([values['-FIELD-'][0], values['-FIELD-'][1]])
                 selectingStartPoint = False
 
         if event == '-ADD_POINT_BUTTON-':
@@ -76,8 +77,12 @@ if __name__ == '__main__':
                 points.append([values['-FIELD-'][0], values['-FIELD-'][1]])
                 addingPoint = False
 
-        for i in range(1, len(points)):
+        if len(points) > 1:
+            field.delete_figure(startPoint_line)
+            startPoint_line = field.draw_line(points[0], points[1], 'black')
+        for i in range(2, len(points)):
             field.draw_line(points[i-1], points[i], 'black')
+
 
 
 
