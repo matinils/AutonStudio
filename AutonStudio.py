@@ -9,13 +9,14 @@ if __name__ == '__main__':
     Path3 = "(10, 20) to (30, 50) going 40in/s at 90°"
     Paths = [Path1, Path2, Path3]
 
+
     pathInfo = sg.Text('None Selected', key='-PATH_INFO-', size=[50, 1])
 
     # Each inch is five pixels
     field = sg.Graph(canvas_size=[720, 720], graph_bottom_left=[0, 0], graph_top_right=[720, 720], background_color='#BAB8B8', key='-FIELD-', enable_events=True)
 
     col = [[sg.Button('Set Start Point', key='-START_POINT_BUTTON-')],
-           [sg.Button('Add Point to Path')],
+           [sg.Button('Add Point to Path', key='-ADD_POINT_BUTTON-')],
            [sg.Button('Add Turn')],
            [sg.Button('Add Robot Operation')],
            [sg.Text('\nSelect Path to Edit')],
@@ -38,7 +39,10 @@ if __name__ == '__main__':
     # f = open("testFile.txt", "x") This can be used to create a file. Very easy. Nice.
 
     selectingStartPoint = False
+    addingPoint = False;
     startPoint_circle = None
+    points = []
+
 
     while True:  # Event Loop
         event, values = window.read()  # can also be written as event, values = window()
@@ -61,7 +65,20 @@ if __name__ == '__main__':
             if event == '-FIELD-':
                 field.delete_figure(startPoint_circle)
                 startPoint_circle = field.draw_circle([values['-FIELD-'][0], values['-FIELD-'][1]], 5)
+                points.append([values['-FIELD-'][0], values['-FIELD-'][1]])
                 selectingStartPoint = False
+
+        if event == '-ADD_POINT_BUTTON-':
+            addingPoint = True
+
+        if addingPoint:
+            if event == '-FIELD-':
+                points.append([values['-FIELD-'][0], values['-FIELD-'][1]])
+                addingPoint = False
+
+        for i in range(1, len(points)):
+            field.draw_line(points[i-1], points[i], 'black')
+
 
 
     window.close()
