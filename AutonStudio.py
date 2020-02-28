@@ -11,6 +11,8 @@ if __name__ == '__main__':
 
     pathInfo = sg.Text('None Selected', key='-PATH_INFO-', size=[50, 1])
 
+    field = sg.Graph(canvas_size=[600, 600], graph_bottom_left=[0, 0], graph_top_right=[600, 600], background_color='#BAB8B8', key='-FIELD-')
+
     col = [[sg.Button('Set Start Point')],
            [sg.Button('Add Point to Path')],
            [sg.Button('Add Turn')],
@@ -21,10 +23,16 @@ if __name__ == '__main__':
            [sg.Text('Path Being Edited:')],
            [pathInfo]]
 
-    layout = [[sg.Graph(canvas_size=[600, 600], graph_bottom_left=[0, 0], graph_top_right=[600, 600], background_color='#BAB8B8'), sg.Column(col)],
+    layout = [[field, sg.Column(col)],
               [sg.Button('Exit')]]
 
     window = sg.Window('Window Title', layout)
+
+    window.finalize()
+
+    for x in range(1, 6):
+        field.draw_line([100*x, 600], [100*x, 0], 'black')
+        field.draw_line([0, 100*x], [600, 100*x], 'black')
 
     # f = open("testFile.txt", "x") This can be used to create a file. Very easy. Nice.
 
