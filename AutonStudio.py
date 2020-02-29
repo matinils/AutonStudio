@@ -12,18 +12,20 @@ if __name__ == '__main__':
     # Each inch is five pixels
     field = sg.Graph(canvas_size=[720, 720], graph_bottom_left=[0, 0], graph_top_right=[720, 720], background_color='#BAB8B8', key='-FIELD-', enable_events=True)
 
-    col = [[sg.Button('Set Start Point', key='-START_POINT_BUTTON-')],
-           [sg.Button('Add Point to Path', key='-ADD_POINT_BUTTON-')],
-           [sg.Button('Add Turn')],
-           [sg.Button('Add Robot Operation')],
-           [sg.Button('Simulate Robot Run', key='-SIMULATE_BUTTON-')],
-           [sg.Text('\nSelect Path to Edit')],
-           [sg.Listbox(values=[], size=(50, 6), key='-PATH_LIST-')],
-           [sg.Button('Edit Path', key='-EDIT_PATH_BUTTON-')],
-           [sg.Text('Path Being Edited:')],
-           [pathInfo]]
+    main_column = [[sg.Button('Set Start Point', key='-START_POINT_BUTTON-')],
+                   [sg.Button('Add Point to Path', key='-ADD_POINT_BUTTON-')],
+                   [sg.Button('Add Turn')],
+                   [sg.Button('Add Robot Operation')],
+                   [sg.Button('Simulate Robot Run', key='-SIMULATE_BUTTON-')],
+                   [sg.Text('\nSelect Path to Edit')],
+                   [sg.Listbox(values=[], size=(50, 6), key='-PATH_LIST-')],
+                   [sg.Button('Edit Path', key='-EDIT_PATH_BUTTON-')],
+                   [sg.Text('Path Being Edited:')],
+                   [pathInfo],
+                   [sg.Text('Start X', visible=False, key='-START_X_TEXT-'), sg.InputText(default_text='', enable_events=True, size=[10, 1], visible=False, key='-START_X_INPUT-'), sg.Text('   Start Y', visible=False, key='-START_Y_TEXT-'), sg.InputText(enable_events=True, size=[10, 1], visible=False, key='-START_Y_INPUT-')],
+                   [sg.Text('Final X', visible=False, key='-FINAL_X_TEXT-'), sg.InputText(enable_events=True, size=[10, 1], visible=False, key='-FINAL_X_INPUT-'), sg.Text('   Final Y', visible=False, key='-FINAL_Y_TEXT-'), sg.InputText(enable_events=True, size=[10, 1], visible=False, key='-FINAL_Y_INPUT-')]]
 
-    layout = [[field, sg.Column(col)],
+    layout = [[field, sg.Column(main_column)],
               [sg.Button('Exit')]]
 
     window = sg.Window('Window Title', layout)
@@ -63,6 +65,7 @@ if __name__ == '__main__':
         if event is None or event == 'Exit':
             break
 
+        # Choose which path to edit
         if event == '-EDIT_PATH_BUTTON-':
             counter = 0
             for p in paths:
@@ -129,8 +132,11 @@ if __name__ == '__main__':
                     field.delete_figure(robot_line)
                     robot_rectangle = field.draw_rectangle(bottom_right=[x+45, y-45], top_left=[x-45, y+45], line_color='black')
                     robot_line = field.draw_line([x+45, y], [x+10, y], 'blue', width=4.0)
-                    window.finalize()
-                    time.sleep(1/25 - (time.time() - start_time))
+                    window.refresh()
+                    sleepTime = 1/25 - (time.time() - start_time)
+                    if sleepTime < 0:
+                        sleepTime = 0
+                    time.sleep(sleepTime)
             simulating = False
 
         # Draw robot on the field
