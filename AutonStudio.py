@@ -7,7 +7,7 @@ if __name__ == '__main__':
 
     sg.theme('Dark Blue 3')  # please make your windows colorful
 
-    pathInfo = sg.Text('None Selected', key='-PATH_INFO-', size=[50, 1])
+    pathInfo = sg.Text('None', key='-PATH_INFO-', size=[20, 1])
 
     # Each inch is five pixels
     field = sg.Graph(canvas_size=[720, 720], graph_bottom_left=[0, 0], graph_top_right=[720, 720], background_color='#BAB8B8', key='-FIELD-', enable_events=True)
@@ -20,10 +20,9 @@ if __name__ == '__main__':
                    [sg.Text('\nSelect Path to Edit')],
                    [sg.Listbox(values=[], size=(50, 6), key='-PATH_LIST-')],
                    [sg.Button('Edit Path', key='-EDIT_PATH_BUTTON-')],
-                   [sg.Text('Path Being Edited:')],
-                   [pathInfo],
-                   [sg.Text('Start X', visible=False, key='-START_X_TEXT-'), sg.InputText(default_text='', enable_events=True, size=[10, 1], visible=False, key='-START_X_INPUT-'), sg.Text('   Start Y', visible=False, key='-START_Y_TEXT-'), sg.InputText(enable_events=True, size=[10, 1], visible=False, key='-START_Y_INPUT-')],
-                   [sg.Text('Final X', visible=False, key='-FINAL_X_TEXT-'), sg.InputText(enable_events=True, size=[10, 1], visible=False, key='-FINAL_X_INPUT-'), sg.Text('   Final Y', visible=False, key='-FINAL_Y_TEXT-'), sg.InputText(enable_events=True, size=[10, 1], visible=False, key='-FINAL_Y_INPUT-')]]
+                   [sg.Text('Selected Path:'), pathInfo],
+                   [sg.Text('Start X', key='-START_X_TEXT-'), sg.InputText(enable_events=True, size=[10, 1], key='-START_X_INPUT-'), sg.Text('   Start Y', key='-START_Y_TEXT-'), sg.InputText(enable_events=True, size=[10, 1], key='-START_Y_INPUT-')],
+                   [sg.Text('Final X', key='-FINAL_X_TEXT-'), sg.InputText(enable_events=True, size=[10, 1], key='-FINAL_X_INPUT-'), sg.Text('   Final Y', key='-FINAL_Y_TEXT-'), sg.InputText(enable_events=True, size=[10, 1], key='-FINAL_Y_INPUT-')]]
 
     layout = [[field, sg.Column(main_column)],
               [sg.Button('Exit')]]
@@ -42,15 +41,19 @@ if __name__ == '__main__':
     selectingStartPoint = False
     addingPoint = False
     simulating = False
+    pathEditUpdated = False
     startPoint_circle = None
     startPoint_line = None
     robot_rectangle = None
     robot_line = None
+    point_lines = []
     points = []
     convertedPoints = []
     paths = [None]
     selectedPathNum = None
 
+    window['-START_X_TEXT-'].hide_row()
+    window['-FINAL_X_TEXT-'].hide_row()
     while True:  # Event Loop
         event, values = window.read()  # can also be written as event, values = window()
 
@@ -68,11 +71,31 @@ if __name__ == '__main__':
         # Choose which path to edit
         if event == '-EDIT_PATH_BUTTON-':
             counter = 0
+            pathEditUpdated = False
             for p in paths:
                 counter += 1
                 if len(values['-PATH_LIST-']) > 0 and values['-PATH_LIST-'][0] == p:
-                    window['-PATH_INFO-'].update(p)
+                    window['-PATH_INFO-'].update('Path #' + str(counter))
                     selectedPathNum = counter
+
+        if selectedPathNum is not None and not pathEditUpdated:
+            window['-START_X_TEXT-'].unhide_row()
+            window['-FINAL_X_TEXT-'].unhide_row()
+            window['-START_X_INPUT-'].update(value=convertedPoints[selectedPathNum-1][0])
+            window['-START_Y_INPUT-'].update(value=convertedPoints[selectedPathNum - 1][1])
+            window['-FINAL_X_INPUT-'].update(value=convertedPoints[selectedPathNum][0])
+            window['-FINAL_Y_INPUT-'].update(value=convertedPoints[selectedPathNum][1])
+            pathEditUpdated = True
+
+        if pathEditUpdated:
+            if event == '-START_X_INPUT-':
+                points[selectedPathNum - 1][0] = float(hf.clean_coordinates(values['-START_X_INPUT-'])) * 5 + (720/2)
+            elif event == '-START_Y_INPUT-':
+                points[selectedPathNum - 1][1] = float(hf.clean_coordinates(values['-START_Y_INPUT-'])) * 5 + (720/2)
+            elif event == '-FINAL_X_INPUT-':
+                points[selectedPathNum][0] = float(hf.clean_coordinates(values['-FINAL_X_INPUT-'])) * 5 + (720/2)
+            elif event == '-FINAL_Y_INPUT-':
+                points[selectedPathNum][1] = float(hf.clean_coordinates(values['-Final_Y_INPUT-'])) * 5 + (720/2)
 
         # Select start point and draw the circle for it and add it to points
         if event == '-START_POINT_BUTTON-':
@@ -97,12 +120,15 @@ if __name__ == '__main__':
 
         # Add Points to Paths, then display them in the path list
         paths = []
-        convertedPoints = hf.convert_coordinates(points, pixels_per_inch=5, field_length_inches=144)
+        convertedPoints = hf.convert_coordinates_to_inches(points, pixels_per_inch=5, field_length_inches=144)
         for i in range(1, len(points)):
             paths.append('Path #' + str(i) + ': ' + hf.generate_path(convertedPoints[i-1], convertedPoints[i], 40, 90))
         window['-PATH_LIST-'].update(values=paths)
 
         # Draw lines between all points
+        if len(points) > 0:
+            field.delete_figure(startPoint_circle)
+            startPoint_circle = field.draw_circle(points[0], 5)
         if len(points) > 1:
             lineColor = 'black'
             if selectedPathNum == 1:
@@ -110,10 +136,14 @@ if __name__ == '__main__':
             field.delete_figure(startPoint_line)
             startPoint_line = field.draw_line(points[0], points[1], color=lineColor, width=2.0)
         for i in range(2, len(points)):
+            if len(point_lines) > i-2:
+                field.delete_figure(point_lines[i-2])
             lineColor = 'black'
             if selectedPathNum == i:
                 lineColor = 'yellow'
-            field.draw_line(points[i-1], points[i], color=lineColor, width=2.0)
+            if len(point_lines) < i-1:
+                point_lines.append(None)
+            point_lines[i-2] = (field.draw_line(points[i-1], points[i], color=lineColor, width=2.0))
 
         # Simulate the robot running through the path
         if event == '-SIMULATE_BUTTON-':
@@ -148,7 +178,6 @@ if __name__ == '__main__':
             robotLinePoints = [[points[0][0] + 45, points[0][1]], [points[0][0] + 10, points[0][1]]]
             robot_rectangle = field.draw_rectangle(bottom_right=bRightRobotRect, top_left=tLeftRobotRect, line_color='black')
             robot_line = field.draw_line(robotLinePoints[0], robotLinePoints[1], 'blue', width=4.0)
-
 
     window.close()
 

@@ -1,5 +1,6 @@
 # Python Module HelperFunctions
 import math
+import re
 
 
 def generate_path(point1, point2, velocity, heading):
@@ -14,7 +15,7 @@ def generate_path(point1, point2, velocity, heading):
     return path
 
 
-def convert_coordinates(points, pixels_per_inch, field_length_inches):
+def convert_coordinates_to_inches(points, pixels_per_inch, field_length_inches):
     converted_points = []
     for p in points:
         new_point = [None, None]
@@ -22,6 +23,20 @@ def convert_coordinates(points, pixels_per_inch, field_length_inches):
         new_point[1] = p[1] / pixels_per_inch
         new_point[0] -= (field_length_inches / 2.0)
         new_point[1] -= (field_length_inches / 2.0)
+        new_point[0] = round(new_point[0], 2)
+        new_point[1] = round(new_point[1], 2)
+        converted_points.append(new_point)
+    return converted_points
+
+
+def convert_coordinates_to_pixels(points, pixels_per_inch, field_length_pixels):
+    converted_points = []
+    for p in points:
+        new_point = [None, None]
+        new_point[0] = p[0] * pixels_per_inch
+        new_point[1] = p[1] * pixels_per_inch
+        new_point[0] += (field_length_pixels / 2.0)
+        new_point[1] += (field_length_pixels / 2.0)
         new_point[0] = round(new_point[0], 2)
         new_point[1] = round(new_point[1], 2)
         converted_points.append(new_point)
@@ -44,3 +59,15 @@ def calculate_movement_per_frame(point1, point2, inches_per_second, frames_per_s
         y_per_frame *= -1
         x_per_frame *= -1
     return [x_per_frame, y_per_frame]
+
+
+def clean_coordinates(coord=''):
+    string = ''.join(c for c in coord if c.isdigit() or c == '.' or c == '-')
+    if len(string) > 0 and (string[0] == '.'):
+        string = string[1:-1]
+    if len(string) > 0 and (string[-1] == '.' or string[-1] == '-'):
+        string = string[0:-1]
+    if len(string) == 0:
+        string += '0'
+    return string
+
