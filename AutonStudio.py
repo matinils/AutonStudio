@@ -19,7 +19,7 @@ if __name__ == '__main__':
            [sg.Button('Simulate Robot Run', key='-SIMULATE_BUTTON-')],
            [sg.Text('\nSelect Path to Edit')],
            [sg.Listbox(values=[], size=(50, 6), key='-PATH_LIST-')],
-           [sg.Button('Edit Path')],
+           [sg.Button('Edit Path', key='-EDIT_PATH_BUTTON-')],
            [sg.Text('Path Being Edited:')],
            [pathInfo]]
 
@@ -47,6 +47,7 @@ if __name__ == '__main__':
     points = []
     convertedPoints = []
     paths = [None]
+    selectedPathNum = None
 
     while True:  # Event Loop
         event, values = window.read()  # can also be written as event, values = window()
@@ -62,9 +63,13 @@ if __name__ == '__main__':
         if event is None or event == 'Exit':
             break
 
-        for p in paths:
-            if len(values['-PATH_LIST-']) > 0 and values['-PATH_LIST-'][0] == p and event == 'Edit Path':
-                window['-PATH_INFO-'].update(p)
+        if event == '-EDIT_PATH_BUTTON-':
+            counter = 0
+            for p in paths:
+                counter += 1
+                if len(values['-PATH_LIST-']) > 0 and values['-PATH_LIST-'][0] == p:
+                    window['-PATH_INFO-'].update(p)
+                    selectedPathNum = counter
 
         # Select start point and draw the circle for it and add it to points
         if event == '-START_POINT_BUTTON-':
@@ -96,10 +101,16 @@ if __name__ == '__main__':
 
         # Draw lines between all points
         if len(points) > 1:
+            lineColor = 'black'
+            if selectedPathNum == 1:
+                lineColor = 'yellow'
             field.delete_figure(startPoint_line)
-            startPoint_line = field.draw_line(points[0], points[1], 'black', width=2.0)
+            startPoint_line = field.draw_line(points[0], points[1], color=lineColor, width=2.0)
         for i in range(2, len(points)):
-            field.draw_line(points[i-1], points[i], 'black', width=2.0)
+            lineColor = 'black'
+            if selectedPathNum == i:
+                lineColor = 'yellow'
+            field.draw_line(points[i-1], points[i], color=lineColor, width=2.0)
 
         # Simulate the robot running through the path
         if event == '-SIMULATE_BUTTON-':
@@ -111,6 +122,7 @@ if __name__ == '__main__':
                 x = points[i-1][0]
                 y = points[i-1][1]
                 for j in range(0, int(num_movements)):
+                    start_time = time.time()
                     x += deltas[0]
                     y += deltas[1]
                     field.delete_figure(robot_rectangle)
@@ -118,7 +130,7 @@ if __name__ == '__main__':
                     robot_rectangle = field.draw_rectangle(bottom_right=[x+45, y-45], top_left=[x-45, y+45], line_color='black')
                     robot_line = field.draw_line([x+45, y], [x+10, y], 'blue', width=4.0)
                     window.finalize()
-                    time.sleep(1/25)
+                    time.sleep(1/25 - (time.time() - start_time))
             simulating = False
 
         # Draw robot on the field
