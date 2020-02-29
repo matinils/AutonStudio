@@ -1,5 +1,7 @@
 import PySimpleGUI as sg
 import HelperFunctions as hf
+import math
+import time
 
 if __name__ == '__main__':
 
@@ -14,6 +16,7 @@ if __name__ == '__main__':
            [sg.Button('Add Point to Path', key='-ADD_POINT_BUTTON-')],
            [sg.Button('Add Turn')],
            [sg.Button('Add Robot Operation')],
+           [sg.Button('Simulate Robot Run', key='-SIMULATE_BUTTON-')],
            [sg.Text('\nSelect Path to Edit')],
            [sg.Listbox(values=[], size=(50, 6), key='-PATH_LIST-')],
            [sg.Button('Edit Path')],
@@ -36,9 +39,13 @@ if __name__ == '__main__':
     # Fields used during the loop
     selectingStartPoint = False
     addingPoint = False
+    simulating = False
     startPoint_circle = None
     startPoint_line = None
+    robot_rectangle = None
+    robot_line = None
     points = []
+    convertedPoints = []
     paths = [None]
 
     while True:  # Event Loop
@@ -82,8 +89,9 @@ if __name__ == '__main__':
 
         # Add Points to Paths, then display them in the path list
         paths = []
+        convertedPoints = hf.convert_coordinates(points, pixels_per_inch=5, field_length_inches=144)
         for i in range(1, len(points)):
-            paths.append('Path #' + str(i) + ': ' + hf.generate_path(points[i-1], points[i], 40, 90))
+            paths.append('Path #' + str(i) + ': ' + hf.generate_path(convertedPoints[i-1], convertedPoints[i], 40, 90))
         window['-PATH_LIST-'].update(values=paths)
 
         # Draw lines between all points
@@ -92,6 +100,37 @@ if __name__ == '__main__':
             startPoint_line = field.draw_line(points[0], points[1], 'black', width=2.0)
         for i in range(2, len(points)):
             field.draw_line(points[i-1], points[i], 'black', width=2.0)
+
+        # Simulate the robot running through the path
+        if event == '-SIMULATE_BUTTON-':
+            simulating = True
+        if simulating:
+            for i in range(1, len(points)):
+                deltas = hf.calculate_movement_per_frame(points[i-1], points[i], inches_per_second=48, frames_per_second=25, pixels_per_inch=5)
+                num_movements = math.sqrt((points[i][0] - points[i-1][0])**2 + (points[i][1] - points[i-1][1])**2) / math.hypot(deltas[0], deltas[1])
+                x = points[i-1][0]
+                y = points[i-1][1]
+                for j in range(0, int(num_movements)):
+                    x += deltas[0]
+                    y += deltas[1]
+                    field.delete_figure(robot_rectangle)
+                    field.delete_figure(robot_line)
+                    robot_rectangle = field.draw_rectangle(bottom_right=[x+45, y-45], top_left=[x-45, y+45], line_color='black')
+                    robot_line = field.draw_line([x+45, y], [x+10, y], 'blue', width=4.0)
+                    window.finalize()
+                    time.sleep(1/25)
+            simulating = False
+
+        # Draw robot on the field
+        if len(points) > 0:
+            field.delete_figure(robot_rectangle)
+            field.delete_figure(robot_line)
+            bRightRobotRect = [points[0][0] + 45, points[0][1] - 45]
+            tLeftRobotRect = [points[0][0] - 45, points[0][1] + 45]
+            robotLinePoints = [[points[0][0] + 45, points[0][1]], [points[0][0] + 10, points[0][1]]]
+            robot_rectangle = field.draw_rectangle(bottom_right=bRightRobotRect, top_left=tLeftRobotRect, line_color='black')
+            robot_line = field.draw_line(robotLinePoints[0], robotLinePoints[1], 'blue', width=4.0)
+
 
     window.close()
 
