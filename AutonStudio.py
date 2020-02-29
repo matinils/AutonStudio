@@ -28,7 +28,7 @@ if __name__ == '__main__':
                    [sg.Button('Add Turn', key='-ADD_TURN_BUTTON-')],
                    [sg.Button('Add Robot Operation')],
                    [sg.Button('Simulate Robot Run', key='-SIMULATE_BUTTON-')],
-                   [sg.Text('\nSelect Path to Edit')],
+                   [sg.Text('\nEdit Menu:')],
                    [editing_tabGroup]]
 
     layout = [[field, sg.Column(main_column)],
