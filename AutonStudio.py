@@ -22,7 +22,8 @@ if __name__ == '__main__':
                    [sg.Button('Edit Path', key='-EDIT_PATH_BUTTON-')],
                    [sg.Text('Selected Path:'), pathInfo],
                    [sg.Text('Start X', key='-START_X_TEXT-'), sg.InputText(enable_events=True, size=[10, 1], key='-START_X_INPUT-'), sg.Text('   Start Y', key='-START_Y_TEXT-'), sg.InputText(enable_events=True, size=[10, 1], key='-START_Y_INPUT-')],
-                   [sg.Text('Final X', key='-FINAL_X_TEXT-'), sg.InputText(enable_events=True, size=[10, 1], key='-FINAL_X_INPUT-'), sg.Text('   Final Y', key='-FINAL_Y_TEXT-'), sg.InputText(enable_events=True, size=[10, 1], key='-FINAL_Y_INPUT-')]]
+                   [sg.Text('Final X', key='-FINAL_X_TEXT-'), sg.InputText(enable_events=True, size=[10, 1], key='-FINAL_X_INPUT-'), sg.Text('   Final Y', key='-FINAL_Y_TEXT-'), sg.InputText(enable_events=True, size=[10, 1], key='-FINAL_Y_INPUT-')],
+                   [sg.Button('Deselect', key='-DESELECT_BUTTON-')]]
 
     layout = [[field, sg.Column(main_column)],
               [sg.Button('Exit')]]
@@ -54,6 +55,7 @@ if __name__ == '__main__':
 
     window['-START_X_TEXT-'].hide_row()
     window['-FINAL_X_TEXT-'].hide_row()
+    window['-DESELECT_BUTTON-'].hide_row()
     while True:  # Event Loop
         event, values = window.read()  # can also be written as event, values = window()
 
@@ -78,9 +80,17 @@ if __name__ == '__main__':
                     window['-PATH_INFO-'].update('Path #' + str(counter))
                     selectedPathNum = counter
 
+        if event == '-DESELECT_BUTTON-':
+            window['-PATH_INFO-'].update('None')
+            window['-START_X_TEXT-'].hide_row()
+            window['-FINAL_X_TEXT-'].hide_row()
+            window['-DESELECT_BUTTON-'].hide_row()
+            selectedPathNum = None
+
         if selectedPathNum is not None and not pathEditUpdated:
             window['-START_X_TEXT-'].unhide_row()
             window['-FINAL_X_TEXT-'].unhide_row()
+            window['-DESELECT_BUTTON-'].unhide_row()
             window['-START_X_INPUT-'].update(value=convertedPoints[selectedPathNum-1][0])
             window['-START_Y_INPUT-'].update(value=convertedPoints[selectedPathNum - 1][1])
             window['-FINAL_X_INPUT-'].update(value=convertedPoints[selectedPathNum][0])
@@ -95,7 +105,7 @@ if __name__ == '__main__':
             elif event == '-FINAL_X_INPUT-':
                 points[selectedPathNum][0] = float(hf.clean_coordinates(values['-FINAL_X_INPUT-'])) * 5 + (720/2)
             elif event == '-FINAL_Y_INPUT-':
-                points[selectedPathNum][1] = float(hf.clean_coordinates(values['-Final_Y_INPUT-'])) * 5 + (720/2)
+                points[selectedPathNum][1] = float(hf.clean_coordinates(values['-FINAL_Y_INPUT-'])) * 5 + (720/2)
 
         # Select start point and draw the circle for it and add it to points
         if event == '-START_POINT_BUTTON-':
