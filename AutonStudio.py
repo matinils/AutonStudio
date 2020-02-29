@@ -12,18 +12,24 @@ if __name__ == '__main__':
     # Each inch is five pixels
     field = sg.Graph(canvas_size=[720, 720], graph_bottom_left=[0, 0], graph_top_right=[720, 720], background_color='#BAB8B8', key='-FIELD-', enable_events=True)
 
-    main_column = [[sg.Button('Set Start Point', key='-START_POINT_BUTTON-')],
-                   [sg.Button('Add Point to Path', key='-ADD_POINT_BUTTON-')],
-                   [sg.Button('Add Turn')],
-                   [sg.Button('Add Robot Operation')],
-                   [sg.Button('Simulate Robot Run', key='-SIMULATE_BUTTON-')],
-                   [sg.Text('\nSelect Path to Edit')],
-                   [sg.Listbox(values=[], size=(50, 6), key='-PATH_LIST-')],
+    paths_tab = [[sg.Listbox(values=[], size=(50, 6), key='-PATH_LIST-')],
                    [sg.Button('Edit Path', key='-EDIT_PATH_BUTTON-'), sg.Button('Round All', key='-ROUND_ALL_BUTTON-')],
                    [sg.Text('Selected Path:'), pathInfo],
                    [sg.Text('Start X', key='-START_X_TEXT-'), sg.InputText(enable_events=True, size=[10, 1], key='-START_X_INPUT-'), sg.Text('   Start Y', key='-START_Y_TEXT-'), sg.InputText(enable_events=True, size=[10, 1], key='-START_Y_INPUT-')],
                    [sg.Text('Final X', key='-FINAL_X_TEXT-'), sg.InputText(enable_events=True, size=[10, 1], key='-FINAL_X_INPUT-'), sg.Text('   Final Y', key='-FINAL_Y_TEXT-'), sg.InputText(enable_events=True, size=[10, 1], key='-FINAL_Y_INPUT-')],
                    [sg.Button('Deselect', key='-DESELECT_BUTTON-')]]
+
+    turns_tab = [[sg.Listbox(values=[], size=(50, 6), key='-TURN_LIST-')]]
+
+    editing_tabGroup = sg.TabGroup(layout=[[sg.Tab(layout=paths_tab, title='Paths'), sg.Tab(layout=turns_tab, title='Turns')]])
+
+    main_column = [[sg.Button('Set Start Point', key='-START_POINT_BUTTON-')],
+                   [sg.Button('Add Point', key='-ADD_POINT_BUTTON-')],
+                   [sg.Button('Add Turn', key='-ADD_TURN_BUTTON-')],
+                   [sg.Button('Add Robot Operation')],
+                   [sg.Button('Simulate Robot Run', key='-SIMULATE_BUTTON-')],
+                   [sg.Text('\nSelect Path to Edit')],
+                   [editing_tabGroup]]
 
     layout = [[field, sg.Column(main_column)],
               [sg.Button('Exit')]]
@@ -33,14 +39,20 @@ if __name__ == '__main__':
 
     # Draw lines on the field
     for x in range(1, 6):
-        field.draw_line([120*x, 720], [120*x, 0], 'black')
-        field.draw_line([0, 120*x], [720, 120*x], 'black')
+        field.draw_line([120 * x, 720], [120 * x, 0], 'black')
+        field.draw_line([0, 120 * x], [720, 120 * x], 'black')
+
+    # Hide certain elements
+    window['-START_X_TEXT-'].hide_row()
+    window['-FINAL_X_TEXT-'].hide_row()
+    window['-DESELECT_BUTTON-'].hide_row()
 
     # f = open("testFile.txt", "x") This can be used to create a file. Very easy. Nice.
 
     # Fields used during the loop
     selectingStartPoint = False
     addingPoint = False
+    addingTurn = False
     simulating = False
     pathEditUpdated = False
     startPoint_circle = None
@@ -48,14 +60,14 @@ if __name__ == '__main__':
     robot_rectangle = None
     robot_line = None
     point_lines = []
+    turn_circles = []
     points = []
+    turns = []
     convertedPoints = []
     paths = [None]
+    turnStrings = [None]
     selectedPathNum = None
 
-    window['-START_X_TEXT-'].hide_row()
-    window['-FINAL_X_TEXT-'].hide_row()
-    window['-DESELECT_BUTTON-'].hide_row()
     while True:  # Event Loop
         event, values = window.read()  # can also be written as event, values = window()
 
@@ -107,6 +119,7 @@ if __name__ == '__main__':
             elif event == '-FINAL_Y_INPUT-':
                 points[selectedPathNum][1] = float(hf.clean_coordinates(values['-FINAL_Y_INPUT-'])) * 5 + (720/2)
 
+        # Rounds all the points to the nearest inch
         if event == '-ROUND_ALL_BUTTON-':
             for i in range(0, len(convertedPoints)):
                 points[i][0] = round(convertedPoints[i][0]) * 5 + (720/2)
@@ -115,6 +128,8 @@ if __name__ == '__main__':
         # Select start point and draw the circle for it and add it to points
         if event == '-START_POINT_BUTTON-':
             selectingStartPoint = True
+            addingPoint = False
+            addingTurn = False
         if selectingStartPoint:
             if event == '-FIELD-':
                 field.delete_figure(startPoint_circle)
@@ -125,20 +140,49 @@ if __name__ == '__main__':
                     points.append([values['-FIELD-'][0], values['-FIELD-'][1]])
                 selectingStartPoint = False
 
-        # Select next point and and it to points
+        # Select next point and and it to list of points
         if event == '-ADD_POINT_BUTTON-' and len(points) > 0:
             addingPoint = True
+            selectingStartPoint = False
+            addingTurn = False
         if addingPoint:
             if event == '-FIELD-':
                 points.append([values['-FIELD-'][0], values['-FIELD-'][1]])
                 addingPoint = False
 
-        # Add Points to Paths, then display them in the path list
+        # Select a spot to add a turn and add it to list of turns
+        if event == '-ADD_TURN_BUTTON-':
+            addingTurn = True
+        if addingTurn:
+            if len(turn_circles) == 0:
+                for i in range(0, len(points)):
+                    turn_circles.append(field.draw_circle(points[i], 10, fill_color='black'))
+            if event == '-FIELD-':
+                for i in range(0, len(points)):
+                    if abs(values['-FIELD-'][0] - points[i][0]) < 10 and abs(values['-FIELD-'][1]) - points[i][1] < 10:
+                        angle = sg.PopupGetText('Enter turn angle in degrees', title='Turn Angle Entry')
+                        if angle is not None:
+                            turns.append([i, hf.clean_coordinates(angle)])
+                            addingTurn = False
+                        else:
+                            sg.PopupAnnoying('ERROR: Please enter a value')
+        if not addingTurn:
+            if len(turn_circles) > 0:
+                for c in turn_circles:
+                    field.delete_figure(c)
+                turn_circles.clear()
+
+        # Add points and turns to list of paths, then display them in the path list
         paths = []
         convertedPoints = hf.convert_coordinates_to_inches(points, pixels_per_inch=5, field_length_inches=144)
         for i in range(1, len(points)):
-            paths.append('Path #' + str(i) + ': ' + hf.generate_path(convertedPoints[i-1], convertedPoints[i], 40, 90))
+            paths.append('Path #' + str(i) + ': ' + hf.generate_path_string(convertedPoints[i - 1], convertedPoints[i], 40, 90))
         window['-PATH_LIST-'].update(values=paths)
+
+        turnStrings = []
+        for i in range(0, len(turns)):
+            turnStrings.append('Turn #' + str(i+1) + ": " + hf.generate_turn_string(turns[i], points))
+        window['-TURN_LIST-'].update(values=turnStrings)
 
         # Draw lines between all points
         if len(points) > 0:

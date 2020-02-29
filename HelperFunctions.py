@@ -3,7 +3,7 @@ import math
 import re
 
 
-def generate_path(point1, point2, velocity, heading):
+def generate_path_string(point1, point2, velocity, heading):
     path = '('
     path += str(point1[0]) + ', ' + str(point1[1]) + ')'
     path += ' to '
@@ -13,6 +13,14 @@ def generate_path(point1, point2, velocity, heading):
     path += ' at '
     path += str(heading) + '°'
     return path
+
+
+def generate_turn_string(turn, points):
+    string = 'Turn to '
+    string += str(turn[1]) + '°'
+    string += ' at ('
+    string += str(points[turn[0]][0]) + ', ' + str(points[turn[0]][1]) + ')'
+    return string
 
 
 def convert_coordinates_to_inches(points, pixels_per_inch, field_length_inches):
