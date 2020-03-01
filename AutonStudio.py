@@ -1,4 +1,6 @@
 import PySimpleGUI as sg
+from PySimpleGUI import theme_previewer
+
 import HelperFunctions as hf
 import math
 import time
@@ -35,11 +37,28 @@ if __name__ == '__main__':
                    [sg.Text('\nEdit Menu:')],
                    [editing_tabGroup]]
 
+    logo = sg.Image('/Users/quilicam/PycharmProjects/AutonStudio/resources/image1.png')
+
+    menu_tab = sg.Button('Click to Continue to Studio', key='-CONTINUE_BUTTON-')
+
     layout = [[field, sg.Column(main_column)],
               [sg.Button('Exit')]]
+    layout2 = [[sg.Text('Welcome to Auton Studio', text_color='White', font='Helvetica 20', justification='center', size=[32,1]),],[logo, menu_tab]]
 
-    window = sg.Window('Window Title', layout)
+
+
+
+
+    window = sg.Window('Main GUI', layout)
+    window2 = sg.Window('Title Screen', layout2)
+    window2.finalize()
+    while True:
+        event, values = window2.read()
+        if event == '-CONTINUE_BUTTON-':
+            break
+    window2.close()
     window.finalize()
+
 
     # Draw lines on the field
     for x in range(1, 6):
