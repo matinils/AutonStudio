@@ -5,9 +5,10 @@ import time
 
 if __name__ == '__main__':
 
-    sg.theme('Dark Blue 3')  # please make your windows colorful
+    sg.theme('Dark Green')  # please make your windows colorful
 
     pathInfo = sg.Text('None', key='-PATH_INFO-', size=[20, 1])
+    turnInfo = sg.Text('None', key='-TURN_INFO-', size=[20, 1])
 
     # Each inch is five pixels
     field = sg.Graph(canvas_size=[720, 720], graph_bottom_left=[0, 0], graph_top_right=[720, 720], background_color='#BAB8B8', key='-FIELD-', enable_events=True)
@@ -19,7 +20,10 @@ if __name__ == '__main__':
                    [sg.Text('Final X', key='-FINAL_X_TEXT-'), sg.InputText(enable_events=True, size=[10, 1], key='-FINAL_X_INPUT-'), sg.Text('   Final Y', key='-FINAL_Y_TEXT-'), sg.InputText(enable_events=True, size=[10, 1], key='-FINAL_Y_INPUT-')],
                    [sg.Button('Deselect', key='-DESELECT_BUTTON-')]]
 
-    turns_tab = [[sg.Listbox(values=[], size=(50, 6), key='-TURN_LIST-')]]
+    turns_tab = [[sg.Listbox(values=[], size=(50, 6), key='-TURN_LIST-')],
+                 [sg.Button('Edit Turn', key='-EDIT_TURN_BUTTON-')],
+                 [sg.Text('Selected Turn:'), turnInfo],
+                 [sg.Text('Angle', key='-ANGLE_TEXT-'), sg.InputText(enable_events=True, size=[10, 1], key='-ANGLE_INPUT-')]]
 
     editing_tabGroup = sg.TabGroup(layout=[[sg.Tab(layout=paths_tab, title='Paths'), sg.Tab(layout=turns_tab, title='Turns')]])
 
@@ -46,6 +50,7 @@ if __name__ == '__main__':
     window['-START_X_TEXT-'].hide_row()
     window['-FINAL_X_TEXT-'].hide_row()
     window['-DESELECT_BUTTON-'].hide_row()
+    window['-ANGLE_TEXT-'].hide_row()
 
     # f = open("testFile.txt", "x") This can be used to create a file. Very easy. Nice.
 
@@ -55,6 +60,7 @@ if __name__ == '__main__':
     addingTurn = False
     simulating = False
     pathEditUpdated = False
+    turnEditUpdated = False
     startPoint_circle = None
     startPoint_line = None
     robot_rectangle = None
@@ -69,6 +75,7 @@ if __name__ == '__main__':
     paths = [None]
     turnStrings = [None]
     selectedPathNum = None
+    selectedTurnNum = None
 
     while True:  # Event Loop
         event, values = window.read()  # can also be written as event, values = window()
@@ -94,14 +101,6 @@ if __name__ == '__main__':
                     window['-PATH_INFO-'].update('Path #' + str(counter))
                     selectedPathNum = counter
 
-        # Deselect the current path
-        if event == '-DESELECT_BUTTON-':
-            window['-PATH_INFO-'].update('None')
-            window['-START_X_TEXT-'].hide_row()
-            window['-FINAL_X_TEXT-'].hide_row()
-            window['-DESELECT_BUTTON-'].hide_row()
-            selectedPathNum = None
-
         # Show the entry fields for editing the path
         if selectedPathNum is not None and not pathEditUpdated:
             window['-START_X_TEXT-'].unhide_row()
@@ -112,7 +111,6 @@ if __name__ == '__main__':
             window['-FINAL_X_INPUT-'].update(value=convertedPoints[selectedPathNum][0])
             window['-FINAL_Y_INPUT-'].update(value=convertedPoints[selectedPathNum][1])
             pathEditUpdated = True
-
         # Change the values of a point based on what was entered into the entry field
         if pathEditUpdated:
             if event == '-START_X_INPUT-':
@@ -129,6 +127,34 @@ if __name__ == '__main__':
             for i in range(0, len(convertedPoints)):
                 points[i][0] = round(convertedPoints[i][0]) * 5 + (720/2)
                 points[i][1] = round(convertedPoints[i][1]) * 5 + (720 / 2)
+
+        # Deselect the current path
+        if event == '-DESELECT_BUTTON-':
+            window['-PATH_INFO-'].update('None')
+            window['-START_X_TEXT-'].hide_row()
+            window['-FINAL_X_TEXT-'].hide_row()
+            window['-DESELECT_BUTTON-'].hide_row()
+            selectedPathNum = None
+
+        # Choose which turn to edit
+        if event == '-EDIT_TURN_BUTTON-':
+            counter = 0
+            turnEditUpdated = False
+            for t in turnStrings:
+                counter += 1
+                if len(values['-TURN_LIST-']) > 0 and values['-TURN_LIST-'][0] == t:
+                    window['-TURN_INFO-'].update('Turn #' + str(counter))
+                    selectedTurnNum = counter
+
+        # Show the entry fields for editing the turn
+        if selectedTurnNum is not None and not turnEditUpdated:
+            window['-ANGLE_TEXT-'].unhide_row()
+            window['-ANGLE_INPUT-'].update(value=turns[selectedTurnNum-1][1])
+            turnEditUpdated = True
+        # Change the angle value of a turn based on what was entered into the entry field
+        if turnEditUpdated:
+            if event == '-ANGLE_INPUT-':
+                turns[selectedTurnNum - 1][1] = float(hf.clean_coordinates(values['-ANGLE_INPUT-']))
 
         # Select start point and draw the circle for it and add it to points
         if event == '-START_POINT_BUTTON-':
@@ -199,7 +225,7 @@ if __name__ == '__main__':
             selectingStartPoint = False
         if simulating:
             for i in range(1, len(points)):
-                deltas = hf.calculate_movement_per_frame(points[i-1], points[i], inches_per_second=48, frames_per_second=25, pixels_per_inch=5)
+                deltas = hf.calculate_movement_per_frame(points[i-1], points[i], inches_per_second=48, frames_per_second=60, pixels_per_inch=5)
                 num_movements = math.sqrt((points[i][0] - points[i-1][0])**2 + (points[i][1] - points[i-1][1])**2) / math.hypot(deltas[0], deltas[1])
                 x = points[i-1][0]
                 y = points[i-1][1]
@@ -212,7 +238,7 @@ if __name__ == '__main__':
                     robot_rectangle = field.draw_rectangle(bottom_right=[x+45, y-45], top_left=[x-45, y+45], line_color='black')
                     robot_line = field.draw_line([x+45, y], [x+10, y], 'blue', width=4.0)
                     window.refresh()
-                    sleepTime = 1/25 - (time.time() - start_time)
+                    sleepTime = 1/60 - (time.time() - start_time)
                     if sleepTime < 0:
                         sleepTime = 0
                     time.sleep(sleepTime)
