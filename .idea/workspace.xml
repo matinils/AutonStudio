@@ -1,8 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="b6385ae1-4511-493e-aa66-b245eea10ee4" name="Default Changelist" comment="" />
-    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <list default="true" id="b6385ae1-4511-493e-aa66-b245eea10ee4" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/resources/image1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/venv/bin/Activate.ps1" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/venv/bin/activate" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/venv/bin/activate.csh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/venv/bin/activate.fish" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/venv/bin/python" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/venv/bin/python3" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/venv/bin/python3.8" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/venv/lib/python3.8/site-packages/PySimpleGUI-4.16.0.dist-info/INSTALLER" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/venv/lib/python3.8/site-packages/PySimpleGUI-4.16.0.dist-info/METADATA" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/venv/lib/python3.8/site-packages/PySimpleGUI-4.16.0.dist-info/RECORD" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/venv/lib/python3.8/site-packages/PySimpleGUI-4.16.0.dist-info/WHEEL" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/venv/lib/python3.8/site-packages/PySimpleGUI-4.16.0.dist-info/top_level.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/venv/lib/python3.8/site-packages/PySimpleGUI/PySimpleGUI.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/venv/lib/python3.8/site-packages/PySimpleGUI/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/venv/pyvenv.cfg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/AutonStudio.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/AutonStudio.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AutonStudio.py" beforeDir="false" afterPath="$PROJECT_DIR$/AutonStudio.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -13,27 +33,28 @@
     <option name="ROOT_SYNC" value="DONT_SYNC" />
   </component>
   <component name="ProjectId" id="1YUkBReWbWiL4tz5vDaowH7Qnkk" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="vcs.Git" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/resources" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\Matt\Documents\GitHub\AutonStudio" />
     </key>
-  </component>
-  <component name="RunDashboard">
-    <option name="ruleStates">
-      <list>
-        <RuleState>
-          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
-        </RuleState>
-        <RuleState>
-          <option name="name" value="StatusDashboardGroupingRule" />
-        </RuleState>
-      </list>
-    </option>
   </component>
   <component name="RunManager">
     <configuration name="AutonStudio" type="PythonConfigurationType" factoryName="Python" temporary="true">
@@ -88,5 +109,38 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="175" y="383" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1583094417967">
+      <screen x="0" y="23" width="1440" height="827" />
+    </state>
+    <state x="175" y="383" key="#com.intellij.fileTypes.FileTypeChooser/0.23.1440.827@0.23.1440.827" timestamp="1583094417967" />
+    <state x="508" y="212" key="FileChooserDialogImpl" timestamp="1583092032312">
+      <screen x="0" y="0" width="1440" height="900" />
+    </state>
+    <state x="508" y="212" key="FileChooserDialogImpl/0.0.1440.900@0.0.1440.900" timestamp="1583092032312" />
+    <state width="1419" height="83" key="GridCell.Tab.0.bottom" timestamp="1583096831673">
+      <screen x="0" y="0" width="1440" height="900" />
+    </state>
+    <state width="1419" height="83" key="GridCell.Tab.0.bottom/0.0.1440.900@0.0.1440.900" timestamp="1583096831673" />
+    <state width="1419" height="83" key="GridCell.Tab.0.center" timestamp="1583096831672">
+      <screen x="0" y="0" width="1440" height="900" />
+    </state>
+    <state width="1419" height="83" key="GridCell.Tab.0.center/0.0.1440.900@0.0.1440.900" timestamp="1583096831672" />
+    <state width="1419" height="83" key="GridCell.Tab.0.left" timestamp="1583096831671">
+      <screen x="0" y="0" width="1440" height="900" />
+    </state>
+    <state width="1419" height="83" key="GridCell.Tab.0.left/0.0.1440.900@0.0.1440.900" timestamp="1583096831671" />
+    <state width="1419" height="83" key="GridCell.Tab.0.right" timestamp="1583096831672">
+      <screen x="0" y="0" width="1440" height="900" />
+    </state>
+    <state width="1419" height="83" key="GridCell.Tab.0.right/0.0.1440.900@0.0.1440.900" timestamp="1583096831672" />
+    <state x="229" y="89" key="SettingsEditor" timestamp="1583092055285">
+      <screen x="0" y="0" width="1440" height="900" />
+    </state>
+    <state x="229" y="89" key="SettingsEditor/0.0.1440.900@0.0.1440.900" timestamp="1583092055285" />
   </component>
 </project>

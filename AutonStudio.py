@@ -1,11 +1,13 @@
 import PySimpleGUI as sg
+from PySimpleGUI import theme_previewer
+
 import HelperFunctions as hf
 import math
 import time
 
 if __name__ == '__main__':
 
-    sg.theme('Dark Blue 3')  # please make your windows colorful
+    sg.theme('Dark Green')  # please make your windows colorful
 
     pathInfo = sg.Text('None', key='-PATH_INFO-', size=[20, 1])
 
@@ -31,11 +33,28 @@ if __name__ == '__main__':
                    [sg.Text('\nEdit Menu:')],
                    [editing_tabGroup]]
 
+    logo = sg.Image('/Users/quilicam/PycharmProjects/AutonStudio/resources/image1.png')
+
+    menu_tab = sg.Button('Click to Continue to Studio', key='-CONTINUE_BUTTON-')
+
     layout = [[field, sg.Column(main_column)],
               [sg.Button('Exit')]]
+    layout2 = [[sg.Text('Welcome to Auton Studio', text_color='White', font='Helvetica 20', justification='center', size=[32,1]),],[logo, menu_tab]]
 
-    window = sg.Window('Window Title', layout)
+
+
+
+
+    window = sg.Window('Main GUI', layout)
+    window2 = sg.Window('Title Screen', layout2)
+    window2.finalize()
+    while True:
+        event, values = window2.read()
+        if event == '-CONTINUE_BUTTON-':
+            break
+    window2.close()
     window.finalize()
+
 
     # Draw lines on the field
     for x in range(1, 6):
@@ -199,7 +218,7 @@ if __name__ == '__main__':
             selectingStartPoint = False
         if simulating:
             for i in range(1, len(points)):
-                deltas = hf.calculate_movement_per_frame(points[i-1], points[i], inches_per_second=48, frames_per_second=25, pixels_per_inch=5)
+                deltas = hf.calculate_movement_per_frame(points[i-1], points[i], inches_per_second=48, frames_per_second=60, pixels_per_inch=5)
                 num_movements = math.sqrt((points[i][0] - points[i-1][0])**2 + (points[i][1] - points[i-1][1])**2) / math.hypot(deltas[0], deltas[1])
                 x = points[i-1][0]
                 y = points[i-1][1]
@@ -212,7 +231,7 @@ if __name__ == '__main__':
                     robot_rectangle = field.draw_rectangle(bottom_right=[x+45, y-45], top_left=[x-45, y+45], line_color='black')
                     robot_line = field.draw_line([x+45, y], [x+10, y], 'blue', width=4.0)
                     window.refresh()
-                    sleepTime = 1/25 - (time.time() - start_time)
+                    sleepTime = 1/60 - (time.time() - start_time)
                     if sleepTime < 0:
                         sleepTime = 0
                     time.sleep(sleepTime)
