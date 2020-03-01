@@ -79,3 +79,18 @@ def clean_coordinates(coord=''):
         string += '0'
     return string
 
+
+def sort_turns(turns):
+    if len(turns) > 0:
+        sorted_turns = [turns[0]]
+        for t in turns:
+            if t is turns[0]:
+                continue
+            for st in sorted_turns:
+                if t[0] < st[0]:
+                    sorted_turns.insert(0, t)
+                    break
+            if not sorted_turns.__contains__(t):
+                sorted_turns.append(t)
+        return sorted_turns
+    return turns

@@ -61,6 +61,8 @@ if __name__ == '__main__':
     robot_line = None
     point_lines = []
     turn_circles = []
+    turnIndicator_circles = []
+    turnIndicator_text = []
     points = []
     turns = []
     convertedPoints = []
@@ -92,6 +94,7 @@ if __name__ == '__main__':
                     window['-PATH_INFO-'].update('Path #' + str(counter))
                     selectedPathNum = counter
 
+        # Deselect the current path
         if event == '-DESELECT_BUTTON-':
             window['-PATH_INFO-'].update('None')
             window['-START_X_TEXT-'].hide_row()
@@ -99,6 +102,7 @@ if __name__ == '__main__':
             window['-DESELECT_BUTTON-'].hide_row()
             selectedPathNum = None
 
+        # Show the entry fields for editing the path
         if selectedPathNum is not None and not pathEditUpdated:
             window['-START_X_TEXT-'].unhide_row()
             window['-FINAL_X_TEXT-'].unhide_row()
@@ -109,6 +113,7 @@ if __name__ == '__main__':
             window['-FINAL_Y_INPUT-'].update(value=convertedPoints[selectedPathNum][1])
             pathEditUpdated = True
 
+        # Change the values of a point based on what was entered into the entry field
         if pathEditUpdated:
             if event == '-START_X_INPUT-':
                 points[selectedPathNum - 1][0] = float(hf.clean_coordinates(values['-START_X_INPUT-'])) * 5 + (720/2)
@@ -130,6 +135,7 @@ if __name__ == '__main__':
             selectingStartPoint = True
             addingPoint = False
             addingTurn = False
+            simulating = False
         if selectingStartPoint:
             if event == '-FIELD-':
                 field.delete_figure(startPoint_circle)
@@ -145,6 +151,7 @@ if __name__ == '__main__':
             addingPoint = True
             selectingStartPoint = False
             addingTurn = False
+            simulating = False
         if addingPoint:
             if event == '-FIELD-':
                 points.append([values['-FIELD-'][0], values['-FIELD-'][1]])
@@ -153,13 +160,25 @@ if __name__ == '__main__':
         # Select a spot to add a turn and add it to list of turns
         if event == '-ADD_TURN_BUTTON-':
             addingTurn = True
+            addingPoint = False
+            selectingStartPoint = False
+            simulating = False
         if addingTurn:
             if len(turn_circles) == 0:
                 for i in range(0, len(points)):
-                    turn_circles.append(field.draw_circle(points[i], 10, fill_color='black'))
+                    drawCircle = True
+                    for t in turns:
+                        if t[0] == i:
+                            drawCircle = False
+                    if drawCircle:
+                        turn_circles.append(field.draw_circle(points[i], 10, fill_color='black'))
             if event == '-FIELD-':
                 for i in range(0, len(points)):
-                    if abs(values['-FIELD-'][0] - points[i][0]) < 10 and abs(values['-FIELD-'][1]) - points[i][1] < 10:
+                    allowPointToBeSelected = True
+                    for t in turns:
+                        if t[0] == i:
+                            allowPointToBeSelected = False
+                    if abs(values['-FIELD-'][0] - points[i][0]) < 10 and abs(values['-FIELD-'][1]) - points[i][1] < 10 and allowPointToBeSelected:
                         angle = sg.PopupGetText('Enter turn angle in degrees', title='Turn Angle Entry')
                         if angle is not None:
                             turns.append([i, hf.clean_coordinates(angle)])
@@ -172,16 +191,43 @@ if __name__ == '__main__':
                     field.delete_figure(c)
                 turn_circles.clear()
 
-        # Add points and turns to list of paths, then display them in the path list
+        # Simulate the robot running through the path
+        if event == '-SIMULATE_BUTTON-':
+            simulating = True
+            addingTurn = False
+            addingPoint = False
+            selectingStartPoint = False
+        if simulating:
+            for i in range(1, len(points)):
+                deltas = hf.calculate_movement_per_frame(points[i-1], points[i], inches_per_second=48, frames_per_second=25, pixels_per_inch=5)
+                num_movements = math.sqrt((points[i][0] - points[i-1][0])**2 + (points[i][1] - points[i-1][1])**2) / math.hypot(deltas[0], deltas[1])
+                x = points[i-1][0]
+                y = points[i-1][1]
+                for j in range(0, int(num_movements)):
+                    start_time = time.time()
+                    x += deltas[0]
+                    y += deltas[1]
+                    field.delete_figure(robot_rectangle)
+                    field.delete_figure(robot_line)
+                    robot_rectangle = field.draw_rectangle(bottom_right=[x+45, y-45], top_left=[x-45, y+45], line_color='black')
+                    robot_line = field.draw_line([x+45, y], [x+10, y], 'blue', width=4.0)
+                    window.refresh()
+                    sleepTime = 1/25 - (time.time() - start_time)
+                    if sleepTime < 0:
+                        sleepTime = 0
+                    time.sleep(sleepTime)
+            simulating = False
+
+        # Add points and turns to list of paths and turns, then display them in the path and turn list
         paths = []
         convertedPoints = hf.convert_coordinates_to_inches(points, pixels_per_inch=5, field_length_inches=144)
         for i in range(1, len(points)):
             paths.append('Path #' + str(i) + ': ' + hf.generate_path_string(convertedPoints[i - 1], convertedPoints[i], 40, 90))
         window['-PATH_LIST-'].update(values=paths)
-
         turnStrings = []
+        turns = hf.sort_turns(turns)
         for i in range(0, len(turns)):
-            turnStrings.append('Turn #' + str(i+1) + ": " + hf.generate_turn_string(turns[i], points))
+            turnStrings.append('Turn #' + str(i+1) + ": " + hf.generate_turn_string(turns[i], convertedPoints))
         window['-TURN_LIST-'].update(values=turnStrings)
 
         # Draw lines between all points
@@ -204,29 +250,14 @@ if __name__ == '__main__':
                 point_lines.append(None)
             point_lines[i-2] = (field.draw_line(points[i-1], points[i], color=lineColor, width=2.0))
 
-        # Simulate the robot running through the path
-        if event == '-SIMULATE_BUTTON-':
-            simulating = True
-        if simulating:
-            for i in range(1, len(points)):
-                deltas = hf.calculate_movement_per_frame(points[i-1], points[i], inches_per_second=48, frames_per_second=25, pixels_per_inch=5)
-                num_movements = math.sqrt((points[i][0] - points[i-1][0])**2 + (points[i][1] - points[i-1][1])**2) / math.hypot(deltas[0], deltas[1])
-                x = points[i-1][0]
-                y = points[i-1][1]
-                for j in range(0, int(num_movements)):
-                    start_time = time.time()
-                    x += deltas[0]
-                    y += deltas[1]
-                    field.delete_figure(robot_rectangle)
-                    field.delete_figure(robot_line)
-                    robot_rectangle = field.draw_rectangle(bottom_right=[x+45, y-45], top_left=[x-45, y+45], line_color='black')
-                    robot_line = field.draw_line([x+45, y], [x+10, y], 'blue', width=4.0)
-                    window.refresh()
-                    sleepTime = 1/25 - (time.time() - start_time)
-                    if sleepTime < 0:
-                        sleepTime = 0
-                    time.sleep(sleepTime)
-            simulating = False
+        # Draw turn indicators
+        for i in range(0, len(turns)):
+            if len(turnIndicator_circles) > i:
+                field.delete_figure(turnIndicator_circles[i])
+                field.delete_figure(turnIndicator_text[i])
+            if
+            turnIndicator_circles[i] = field.draw_circle(points[turns[i][0]], 5, fill_color='black')
+            turnIndicator_text[i] = field.draw_text(text=str(turns[i][1]) + '°', location=[points[turns[i][0]][0]+10, points[turns[i][0]][1]+10], color='dark blue')
 
         # Draw robot on the field
         if len(points) > 0:
