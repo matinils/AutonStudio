@@ -255,7 +255,9 @@ if __name__ == '__main__':
             if len(turnIndicator_circles) > i:
                 field.delete_figure(turnIndicator_circles[i])
                 field.delete_figure(turnIndicator_text[i])
-            if
+            if len(turnIndicator_circles) < i + 1:
+                turnIndicator_circles.append(None)
+                turnIndicator_text.append(None)
             turnIndicator_circles[i] = field.draw_circle(points[turns[i][0]], 5, fill_color='black')
             turnIndicator_text[i] = field.draw_text(text=str(turns[i][1]) + '°', location=[points[turns[i][0]][0]+10, points[turns[i][0]][1]+10], color='dark blue')
 
