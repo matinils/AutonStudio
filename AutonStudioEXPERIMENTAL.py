@@ -38,6 +38,10 @@ if __name__ == '__main__':
     startPoint_circle = None
     startPoint_line = None
     robot_rectangle = None
+    robot_line1 = None
+    robot_line2 = None
+    robot_line3 = None
+    robot_line4 = None
     robot_line = None
     point_lines = []
     turn_circles = []
@@ -320,9 +324,19 @@ if __name__ == '__main__':
                         start_time = time.time()
                         x += deltas[0]
                         y += deltas[1]
-                        field.delete_figure(robot_rectangle)
+                        field.delete_figure(robot_line1)
+                        field.delete_figure(robot_line2)
+                        field.delete_figure(robot_line3)
+                        field.delete_figure(robot_line4)
                         field.delete_figure(robot_line)
-                        robot_rectangle = field.draw_rectangle(bottom_right=[x+45, y-45], top_left=[x-45, y+45], line_color='black', line_width=3)
+                        robotCBr = [x + 45, y - 45]  # Bottom right corner and go clockwise
+                        robotCBl = [x - 45, y - 45]
+                        robotCTl = [x - 45, y + 45]
+                        robotCTr = [x + 45, y + 45]
+                        robot_line1 = field.draw_line(robotCBr, robotCBl, color='black', width=3)
+                        robot_line2 = field.draw_line(robotCBl, robotCTl, color='black', width=3)
+                        robot_line3 = field.draw_line(robotCTl, robotCTr, color='black', width=3)
+                        robot_line4 = field.draw_line(robotCTr, robotCBr, color='black', width=3)
                         robot_line = field.draw_line([x+45, y], [x+10, y], 'blue', width=4.0)
                         studio_window.refresh()
                         sleepTime = 1/40 - (time.time() - start_time)
@@ -359,19 +373,21 @@ if __name__ == '__main__':
             # Draw robot on the field and ensures the robot cannot be magically clipping through
             # the field walls (robot starts touching field wall if outside boundary)
             if len(points) > 0:
-                field.delete_figure(robot_rectangle)
+                field.delete_figure(robot_line1)
+                field.delete_figure(robot_line2)
+                field.delete_figure(robot_line3)
+                field.delete_figure(robot_line4)
                 field.delete_figure(robot_line)
-                if points[0][0] < 45:
-                    points[0][0] = 45
-                if points[0][0] > 675:
-                    points[0][0] = 675
-                if points[0][1] < 45:
-                    points[0][1] = 45
-                if points[0][1] > 675:
-                    points[0][1] = 675
-                bRightRobotRect = [points[0][0] + 45, points[0][1] - 45]
-                tLeftRobotRect = [points[0][0] - 45, points[0][1] + 45]
+                robotCBr = [points[0][0] + 45, points[0][1] - 45]  # Bottom right corner and go clockwise
+                robotCBl = [points[0][0] - 45, points[0][1] - 45]
+                robotCTl = [points[0][0] - 45, points[0][1] + 45]
+                robotCTr = [points[0][0] + 45, points[0][1] + 45]
                 robotLinePoints = [[points[0][0] + 45, points[0][1]], [points[0][0] + 10, points[0][1]]]
+                robot_line1 = field.draw_line(robotCBr, robotCBl, color='black', width=3)
+                robot_line2 = field.draw_line(robotCBl, robotCTl, color='black', width=3)
+                robot_line3 = field.draw_line(robotCTl, robotCTr, color='black', width=3)
+                robot_line4 = field.draw_line(robotCTr, robotCBr, color='black', width=3)
+                robot_line = field.draw_line(robotLinePoints[0], robotLinePoints[1], 'blue', width=4.0)
 
                 # Draw lines between all points
                 if len(points) > 0:
@@ -394,8 +410,7 @@ if __name__ == '__main__':
                     point_lines[i - 2] = (field.draw_line(points[i - 1], points[i], color=lineColor, width=2.0))
 
 
-                robot_rectangle = field.draw_rectangle(bottom_right=bRightRobotRect, top_left=tLeftRobotRect, line_color='black', line_width=3)
-                robot_line = field.draw_line(robotLinePoints[0], robotLinePoints[1], 'blue', width=4.0)
+
 
     title_window.close()
 
