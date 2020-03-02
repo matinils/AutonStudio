@@ -7,26 +7,6 @@ import time
 
 if __name__ == '__main__':
 
-    sg.theme('Dark Green')  # please make your windows colorful
-    logo = sg.Image('resources/autonStudioLogo.png')
-
-    drive_selection = [sg.Listbox(['Mechanum with Odometry', 'Mechanum without Odometry', 'H-Drive with Odometry',
-                                 'H-Drive without Odometry'], enable_events=True, key='-DRIVETRAIN_SELECTION-', size=(25,4))]
-
-
-    menu_column = [[sg.Text('\n\n')],
-                   [sg.Button('Click to Continue to Studio', key='-CONTINUE_BUTTON-')],
-                   [sg.Button('Add Configuration', key='-CONFIG_BUTTON-')],
-                   drive_selection]
-
-    layout2 = [[sg.Text('Welcome to Auton Studio', text_color='Black', font='Courier 20 bold', justification='center',
-                    size=[32,1])], [sg.Text('...where your lazy ass doesn\'t have to write the fucking code, because we already wrote it all for you.', text_color='Black', font='Courier 8', justification='center',
-                    size=[72,2])],[logo, sg.Column(menu_column)]]
-
-    title_window = sg.Window('Title Screen', layout2)
-
-     # f = open("testFile.txt", "x") This can be used to create a file. Very easy. Nice.
-
     # Fields used during the loop
     drivetrain = None
     selectingStartPoint = False
@@ -51,12 +31,35 @@ if __name__ == '__main__':
     selectedPathNum = None
     selectedTurnNum = None
 
+    sg.theme('Dark Green')  # please make your windows colorful
+    logo = sg.Image('resources/autonStudioLogo.png')
+
+    drive_selection = [sg.Listbox(['Mechanum with Odometry', 'Mechanum without Odometry', 'H-Drive with Odometry',
+                                 'H-Drive without Odometry'], enable_events=True, key='-DRIVETRAIN_SELECTION-', size=(25,4))]
+
+
+    menu_column = [[sg.Text('\n\n')],
+                   [sg.Button('Click to Continue to Studio', key='-CONTINUE_BUTTON-')],
+                   [sg.Button('Add Configuration', key='-CONFIG_BUTTON-')],
+                   drive_selection]
+
+    layout2 = [[sg.Text('Welcome to Auton Studio', text_color='Black', font='Courier 20 bold', justification='center',
+                    size=[32,1])], [sg.Text('...where your lazy ass doesn\'t have to write the fucking code, because we already wrote it all for you.', text_color='Black', font='Courier 8', justification='center',
+                    size=[72,2])],[logo, sg.Column(menu_column)]]
+
+    title_window = sg.Window('Title Screen', layout2)
+
+     # f = open("testFile.txt", "x") This can be used to create a file. Very easy. Nice.
 
     studioWindowActive = False
     while True:
         event0, values0 = title_window.read()
 
-        print(event0)
+        if event0 == '-DRIVETRAIN_SELECTION-':
+            drivetrain = values0
+
+        print(drivetrain)
+
 
         if event0 is None or event0 == 'Exit:':
             break
@@ -101,13 +104,15 @@ if __name__ == '__main__':
             editing_tabGroup = sg.TabGroup(
                 layout=[[sg.Tab(layout=paths_tab, title='Paths'), sg.Tab(layout=turns_tab, title='Turns')]])
 
+            drivetrain = str(drivetrain)
             main_column = [[sg.Button('Set Start Point', key='-START_POINT_BUTTON-')],
                            [sg.Button('Add Point', key='-ADD_POINT_BUTTON-')],
                            [sg.Button('Add Turn', key='-ADD_TURN_BUTTON-')],
                            [sg.Button('Add Robot Operation')],
                            [sg.Button('Simulate Robot Run', key='-SIMULATE_BUTTON-')],
                            [sg.Text('\nEdit Menu:')],
-                           [editing_tabGroup], [sg.Text('\n')], [sg.Button('Clear Field', key='-CLEAR_FIELD_BUTTON-')]]
+                           [editing_tabGroup], [sg.Text('Selected Drivetrain: ' + drivetrain[drivetrain.index('[') + 2 : drivetrain.index(']') -1 ])],
+                           [sg.Button('Clear Field', key='-CLEAR_FIELD_BUTTON-')]]
 
             layout = [[field, sg.Column(main_column)],
                       [sg.Button('Back', key='-BACK_BUTTON-')],[sg.Button('Exit')]]
