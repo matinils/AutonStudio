@@ -62,7 +62,7 @@ if __name__ == '__main__':
         fieldSave = None
         if not studioWindowActive and event0 == '-CONTINUE_BUTTON-':
             title_window.Hide()
-            studioWindowActive == True
+            studioWindowActive = True
 
             pathInfo = sg.Text('None', key='-PATH_INFO-', size=[20, 1])
             turnInfo = sg.Text('None', key='-TURN_INFO-', size=[20, 1])
@@ -144,7 +144,7 @@ if __name__ == '__main__':
 
             # Back Condition
             if event1 is None or event1 == '-BACK_BUTTON-':
-                studioWindowActive == False
+                studioWindowActive = False
                 studio_window.Close()
                 title_window.UnHide()
                 graphSave = field
