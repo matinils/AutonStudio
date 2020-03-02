@@ -11,7 +11,7 @@ if __name__ == '__main__':
     logo = sg.Image('resources/autonStudioLogo.png')
 
     drive_selection = [sg.Listbox(['Mechanum with Odometry', 'Mechanum without Odometry', 'H-Drive with Odometry',
-                                 'H-Drive without Odometry'], enable_events=False, key='-DRIVETRAIN_SELECTION-', size=(25,4))]
+                                 'H-Drive without Odometry'], enable_events=True, key='-DRIVETRAIN_SELECTION-', size=(25,4))]
 
 
     menu_column = [[sg.Text('\n\n')],
@@ -55,6 +55,8 @@ if __name__ == '__main__':
     studioWindowActive = False
     while True:
         event0, values0 = title_window.read()
+
+        print(event0)
 
         if event0 is None or event0 == 'Exit:':
             break
@@ -126,7 +128,7 @@ if __name__ == '__main__':
                 field.draw_line([0, 120 * x], [720, 120 * x], 'black')
 
 
-        while True:  # Event Loop
+        while True and studioWindowActive:  # Event Loop
             event1, values1 = studio_window.read()  # can also be written as event, values = window()
 
             # Print to console the event and values
@@ -147,7 +149,7 @@ if __name__ == '__main__':
                 studioWindowActive = False
                 studio_window.Close()
                 title_window.UnHide()
-                graphSave = field
+                fieldSave = field
                 break
 
 
@@ -375,12 +377,16 @@ if __name__ == '__main__':
                 field.delete_figure(robot_rectangle)
                 field.delete_figure(robot_line)
                 field.delete_figure(startPoint_circle)
-                field.delete_figure(turn_circles)
-                field.delete_figure(turnIndicator_circles)
+                for tc in turn_circles:
+                    field.delete_figure(tc)
+                for tic in turnIndicator_circles:
+                    field.delete_figure(tic)
                 field.delete_figure(startPoint_line)
-                field.delete_figure(point_lines)
+                for pl in point_lines:
+                    field.delete_figure(pl)
                 field.delete_figure(robotLinePoints)
-                field.delete_figure(turnIndicator_text)
+                for tit in turnIndicator_text:
+                    field.delete_figure(tit)
                 points.clear()
                 point_lines.clear()
                 turn_circles.clear()
