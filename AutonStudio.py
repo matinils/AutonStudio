@@ -58,7 +58,6 @@ if __name__ == '__main__':
         if event0 == '-DRIVETRAIN_SELECTION-':
             drivetrain = values0
 
-        print(drivetrain)
 
 
         if event0 is None or event0 == 'Exit:':
