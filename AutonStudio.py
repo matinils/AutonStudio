@@ -8,25 +8,27 @@ import time
 if __name__ == '__main__':
 
     sg.theme('Dark Green')  # please make your windows colorful
+    logo = sg.Image('resources/autonStudioLogo.png')
+
+    drive_selection = [sg.Listbox(['Mechanum with Odometry', 'Mechanum without Odometry', 'H-Drive with Odometry',
+                                 'H-Drive without Odometry'], enable_events=False, key='-DRIVETRAIN_SELECTION-', size=(25,4))]
 
 
+    menu_column = [[sg.Text('\n\n')],
+                   [sg.Button('Click to Continue to Studio', key='-CONTINUE_BUTTON-')],
+                   [sg.Button('Add Configuration', key='-CONFIG_BUTTON-')],
+                   drive_selection]
 
-    logo = sg.Image('resources/image1.png')
-
-    menu_tab = sg.Button('Click to Continue to Studio', key='-CONTINUE_BUTTON-')
-
-
-    layout2 = [[sg.Text('Welcome to Auton Studio', text_color='White', font='Helvetica 20', justification='center',
-                        size=[32,1]),],[logo, menu_tab]]
+    layout2 = [[sg.Text('Welcome to Auton Studio', text_color='Black', font='Courier 20 bold', justification='center',
+                    size=[32,1])], [sg.Text('...where your lazy ass doesn\'t have to write the fucking code, because we already wrote it all for you.', text_color='Black', font='Courier 8', justification='center',
+                    size=[72,2])],[logo, sg.Column(menu_column)]]
 
     title_window = sg.Window('Title Screen', layout2)
 
-
-
-
-    # f = open("testFile.txt", "x") This can be used to create a file. Very easy. Nice.
+     # f = open("testFile.txt", "x") This can be used to create a file. Very easy. Nice.
 
     # Fields used during the loop
+    drivetrain = None
     selectingStartPoint = False
     addingPoint = False
     addingTurn = False
@@ -49,7 +51,6 @@ if __name__ == '__main__':
     selectedPathNum = None
     selectedTurnNum = None
 
-    graphSave = None
 
     studioWindowActive = False
     while True:
@@ -58,6 +59,7 @@ if __name__ == '__main__':
         if event0 is None or event0 == 'Exit:':
             break
 
+        fieldSave = None
         if not studioWindowActive and event0 == '-CONTINUE_BUTTON-':
             title_window.Hide()
             studioWindowActive == True
@@ -66,8 +68,12 @@ if __name__ == '__main__':
             turnInfo = sg.Text('None', key='-TURN_INFO-', size=[20, 1])
 
             # Each inch is five pixels
-            field = sg.Graph(canvas_size=[720, 720], graph_bottom_left=[0, 0], graph_top_right=[720, 720],
-                        background_color='#BAB8B8', key='-FIELD-', enable_events=True)
+            if fieldSave is None:
+                field = sg.Graph(canvas_size=[720, 720], graph_bottom_left=[0, 0], graph_top_right=[720, 720],
+                            background_color='#BAB8B8', key='-FIELD-', enable_events=True)
+            else:
+                field = fieldSave
+
 
 
             paths_tab = [[sg.Listbox(values=[], size=(50, 6), key='-PATH_LIST-')],
@@ -99,7 +105,7 @@ if __name__ == '__main__':
                            [sg.Button('Add Robot Operation')],
                            [sg.Button('Simulate Robot Run', key='-SIMULATE_BUTTON-')],
                            [sg.Text('\nEdit Menu:')],
-                           [editing_tabGroup]]
+                           [editing_tabGroup], [sg.Text('\n')], [sg.Button('Clear Field', key='-CLEAR_FIELD_BUTTON-')]]
 
             layout = [[field, sg.Column(main_column)],
                       [sg.Button('Back', key='-BACK_BUTTON-')],[sg.Button('Exit')]]
@@ -111,9 +117,14 @@ if __name__ == '__main__':
             studio_window['-ANGLE_TEXT-'].hide_row()
 
             studio_window.finalize()
+
+            for z in range (1, 31):
+                field.draw_line([24 * z, 720], [24 * z, 0], 'light grey')
+                field.draw_line([0, 24 * z], [720, 24 * z], 'light grey')
             for x in range(1, 6):
                 field.draw_line([120 * x, 720], [120 * x, 0], 'black')
                 field.draw_line([0, 120 * x], [720, 120 * x], 'black')
+
 
         while True:  # Event Loop
             event1, values1 = studio_window.read()  # can also be written as event, values = window()
@@ -284,7 +295,7 @@ if __name__ == '__main__':
                         y += deltas[1]
                         field.delete_figure(robot_rectangle)
                         field.delete_figure(robot_line)
-                        robot_rectangle = field.draw_rectangle(bottom_right=[x+45, y-45], top_left=[x-45, y+45], line_color='black')
+                        robot_rectangle = field.draw_rectangle(bottom_right=[x+45, y-45], top_left=[x-45, y+45], line_color='black', line_width=3)
                         robot_line = field.draw_line([x+45, y], [x+10, y], 'blue', width=4.0)
                         studio_window.refresh()
                         sleepTime = 1/40 - (time.time() - start_time)
@@ -356,8 +367,29 @@ if __name__ == '__main__':
                     point_lines[i - 2] = (field.draw_line(points[i - 1], points[i], color=lineColor, width=2.0))
 
 
-                robot_rectangle = field.draw_rectangle(bottom_right=bRightRobotRect, top_left=tLeftRobotRect, line_color='black')
+                robot_rectangle = field.draw_rectangle(bottom_right=bRightRobotRect, top_left=tLeftRobotRect, line_color='black', line_width=3)
                 robot_line = field.draw_line(robotLinePoints[0], robotLinePoints[1], 'blue', width=4.0)
+
+            # Clears all field elements and paths
+            if event1 == '-CLEAR_FIELD_BUTTON-' and len(points) > 0:
+                field.delete_figure(robot_rectangle)
+                field.delete_figure(robot_line)
+                field.delete_figure(startPoint_circle)
+                field.delete_figure(turn_circles)
+                field.delete_figure(turnIndicator_circles)
+                field.delete_figure(startPoint_line)
+                field.delete_figure(point_lines)
+                field.delete_figure(robotLinePoints)
+                field.delete_figure(turnIndicator_text)
+                points.clear()
+                point_lines.clear()
+                turn_circles.clear()
+                turnIndicator_circles.clear()
+                turnIndicator_text.clear()
+                turns.clear()
+                convertedPoints.clear()
+                paths.clear()
+                turnStrings.clear()
 
     title_window.close()
 
