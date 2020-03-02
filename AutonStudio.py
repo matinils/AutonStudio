@@ -128,6 +128,7 @@ if __name__ == '__main__':
             #Exit Condition
             if event1 is None or event1 == 'Exit':
                 studio_window.close()
+                title_window.close()
                 break
 
             # Back Condition
@@ -357,8 +358,6 @@ if __name__ == '__main__':
 
                 robot_rectangle = field.draw_rectangle(bottom_right=bRightRobotRect, top_left=tLeftRobotRect, line_color='black')
                 robot_line = field.draw_line(robotLinePoints[0], robotLinePoints[1], 'blue', width=4.0)
-
-
 
     title_window.close()
 
