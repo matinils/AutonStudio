@@ -390,6 +390,7 @@ if __name__ == '__main__':
                 convertedPoints.clear()
                 paths.clear()
                 turnStrings.clear()
+                fieldSave = None
 
     title_window.close()
 
