@@ -54,6 +54,7 @@ if __name__ == '__main__':
     turnStrings = [None]
     selectedPathNum = None
     selectedTurnNum = None
+    startHeading = 0.0
 
 
     studioWindowActive = False
@@ -115,7 +116,7 @@ if __name__ == '__main__':
 
             layout = [[field, sg.Column(main_column)],
                       [sg.Button('Back', key='-BACK_BUTTON-')],[sg.Button('Exit')]]
-            studio_window = sg.Window('Main GUI', layout)
+            studio_window = sg.Window('EXPERIMENTAL GUI', layout)
 
             studio_window.finalize()
 
@@ -143,7 +144,7 @@ if __name__ == '__main__':
             print(values1)
             print()
 
-            #Exit Condition
+            # Exit Condition
             if event1 is None or event1 == 'Exit':
                 studio_window.close()
                 title_window.close()
@@ -316,10 +317,44 @@ if __name__ == '__main__':
                 selectingStartPoint = False
             if simulating:
                 for i in range(1, len(points)):
-                    deltas = hf.calculate_movement_per_frame(points[i-1], points[i], inches_per_second=48, frames_per_second=40, pixels_per_inch=5)
+                    deltas = hf.calculate_movement_per_frame(points[i-1], points[i], inches_per_second=48, frames_per_second=60, pixels_per_inch=5)
                     num_movements = math.sqrt((points[i][0] - points[i-1][0])**2 + (points[i][1] - points[i-1][1])**2) / math.hypot(deltas[0], deltas[1])
                     x = points[i-1][0]
                     y = points[i-1][1]
+                    prevTurn = None
+                    for t in turns:
+                        if t[0] == i - 1:
+                            print({True: 'TRUE', False: 'FALSE'}[i == 1])
+                            if prevTurn is None:
+                                angle1 = startHeading
+                            else:
+                                angle1 = prevTurn
+                            rot_deltasBr = hf.calculate_rotation_per_frame(x=1.0, y=-1.0, angle1=angle1, angle2=t[1], degrees_per_second=45, frames_per_second=60)
+                            rot_deltasBl = hf.calculate_rotation_per_frame(x=-1.0, y=-1.0, angle1=angle1, angle2=t[1], degrees_per_second=45, frames_per_second=60)
+                            rot_deltasTl = hf.calculate_rotation_per_frame(x=-1.0, y=1.0, angle1=angle1, angle2=t[1], degrees_per_second=45, frames_per_second=60)
+                            rot_deltasTr = hf.calculate_rotation_per_frame(x=1.0, y=1.0, angle1=angle1, angle2=t[1], degrees_per_second=45, frames_per_second=60)
+                            prevTurn = t
+                            for j in range(0, len(rot_deltasBr[0])):
+                                start_time = time.time()
+                                field.delete_figure(robot_line1)
+                                field.delete_figure(robot_line2)
+                                field.delete_figure(robot_line3)
+                                field.delete_figure(robot_line4)
+                                field.delete_figure(robot_line)
+                                robotCBr = [x + 45 * rot_deltasBr[0][j], y + 45 * rot_deltasBr[1][j]]  # Bottom right corner and go clockwise
+                                robotCBl = [x + 45 * rot_deltasBl[0][j], y + 45 * rot_deltasBl[1][j]]
+                                robotCTl = [x + 45 * rot_deltasTl[0][j], y + 45 * rot_deltasTl[1][j]]
+                                robotCTr = [x + 45 * rot_deltasTr[0][j], y + 45 * rot_deltasTr[1][j]]
+                                robot_line1 = field.draw_line(robotCBr, robotCBl, color='red', width=3)
+                                robot_line2 = field.draw_line(robotCBl, robotCTl, color='black', width=3)
+                                robot_line3 = field.draw_line(robotCTl, robotCTr, color='blue', width=3)
+                                robot_line4 = field.draw_line(robotCTr, robotCBr, color='yellow', width=3)
+                                robot_line = field.draw_line([x + 45, y], [x + 10, y], 'blue', width=4.0)
+                                studio_window.refresh()
+                                sleepTime = 1 / 60 - (time.time() - start_time)
+                                if sleepTime < 0:
+                                    sleepTime = 0
+                                time.sleep(sleepTime)
                     for j in range(0, int(num_movements)):
                         start_time = time.time()
                         x += deltas[0]
@@ -333,13 +368,13 @@ if __name__ == '__main__':
                         robotCBl = [x - 45, y - 45]
                         robotCTl = [x - 45, y + 45]
                         robotCTr = [x + 45, y + 45]
-                        robot_line1 = field.draw_line(robotCBr, robotCBl, color='black', width=3)
+                        robot_line1 = field.draw_line(robotCBr, robotCBl, color='red', width=3)
                         robot_line2 = field.draw_line(robotCBl, robotCTl, color='black', width=3)
-                        robot_line3 = field.draw_line(robotCTl, robotCTr, color='black', width=3)
-                        robot_line4 = field.draw_line(robotCTr, robotCBr, color='black', width=3)
+                        robot_line3 = field.draw_line(robotCTl, robotCTr, color='blue', width=3)
+                        robot_line4 = field.draw_line(robotCTr, robotCBr, color='yellow', width=3)
                         robot_line = field.draw_line([x+45, y], [x+10, y], 'blue', width=4.0)
                         studio_window.refresh()
-                        sleepTime = 1/40 - (time.time() - start_time)
+                        sleepTime = 1/60 - (time.time() - start_time)
                         if sleepTime < 0:
                             sleepTime = 0
                         time.sleep(sleepTime)
@@ -383,10 +418,10 @@ if __name__ == '__main__':
                 robotCTl = [points[0][0] - 45, points[0][1] + 45]
                 robotCTr = [points[0][0] + 45, points[0][1] + 45]
                 robotLinePoints = [[points[0][0] + 45, points[0][1]], [points[0][0] + 10, points[0][1]]]
-                robot_line1 = field.draw_line(robotCBr, robotCBl, color='black', width=3)
+                robot_line1 = field.draw_line(robotCBr, robotCBl, color='red', width=3)
                 robot_line2 = field.draw_line(robotCBl, robotCTl, color='black', width=3)
-                robot_line3 = field.draw_line(robotCTl, robotCTr, color='black', width=3)
-                robot_line4 = field.draw_line(robotCTr, robotCBr, color='black', width=3)
+                robot_line3 = field.draw_line(robotCTl, robotCTr, color='blue', width=3)
+                robot_line4 = field.draw_line(robotCTr, robotCBr, color='yellow', width=3)
                 robot_line = field.draw_line(robotLinePoints[0], robotLinePoints[1], 'blue', width=4.0)
 
                 # Draw lines between all points
