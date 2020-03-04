@@ -116,7 +116,7 @@ if __name__ == '__main__':
                            [editing_tabGroup], [sg.Text('\n')], [sg.Button('Clear Field', key='-CLEAR_FIELD_BUTTON-')]]
 
             layout = [[field, sg.Column(main_column)],
-                      [sg.Button('Back', key='-BACK_BUTTON-')],[sg.Button('Exit')]]
+                      [sg.Button('Back', key='-BACK_BUTTON-'), sg.Button('Exit')]]
             studio_window = sg.Window('EXPERIMENTAL GUI', layout)
 
             studio_window.finalize()
@@ -263,6 +263,7 @@ if __name__ == '__main__':
                         points[0] = ([values1['-FIELD-'][0], values1['-FIELD-'][1]])
                     else:
                         points.append([values1['-FIELD-'][0], values1['-FIELD-'][1]])
+                    startHeading = float(hf.clean_coordinates(sg.PopupGetText(message='Enter start heading, 0 is straight up, 90 is to the right, -90 is to the left', title='Heading selection')))
                     selectingStartPoint = False
 
             # Select next point and and it to list of points
@@ -376,7 +377,7 @@ if __name__ == '__main__':
                         robotPolygonPoints = [robotCBr, robotCBl, robotCTl, robotCTr]
                         robot_polygon = field.draw_polygon(robotPolygonPoints, line_color='black', line_width='3', fill_color='')
                         robotPoint = [((robotCTr[0] + robotCBr[0]) / 2.0), ((robotCTr[1] + robotCBr[1]) / 2.0)]
-                        if startHeading == 0 and i == 1 and j == 0:
+                        if startHeading == 0 and rot_deltas_final == [[[45], [-45]], [[-45], [-45]], [[-45], [45]], [[45], [45]]]:
                             robotPoint = [((robotCTr[0] + robotCTl[0]) / 2.0), ((robotCTr[1] + robotCTl[1]) / 2.0)]
                         robot_point = field.draw_point(point=robotPoint, color='yellow', size=15)
                         studio_window.refresh()
