@@ -34,6 +34,7 @@ if __name__ == '__main__':
     sg.theme('Dark Green')  # please make your windows colorful
     logo = sg.Image('resources/autonStudioLogo.png')
 
+    drivetrain = '[Mechanum with Odometry]'
     drive_selection = [sg.Listbox(['Mechanum with Odometry', 'Mechanum without Odometry', 'H-Drive with Odometry',
                                  'H-Drive without Odometry'], enable_events=True, key='-DRIVETRAIN_SELECTION-', size=(25,4), default_values='Mechanum with Odometry')]
 
@@ -110,7 +111,7 @@ if __name__ == '__main__':
                            [sg.Button('Add Robot Operation')],
                            [sg.Button('Simulate Robot Run', key='-SIMULATE_BUTTON-')],
                            [sg.Text('\nEdit Menu:')],
-                           [editing_tabGroup], [sg.Text('Selected Drivetrain: ' + drivetrain[drivetrain.index('[') + 2 : drivetrain.index(']') -1 ])],
+                           [editing_tabGroup], [sg.Text('Selected Drivetrain: ' + drivetrain[drivetrain.index('[')  : drivetrain.index(']') +1 ])],
                            [sg.Button('Clear Field', key='-CLEAR_FIELD_BUTTON-')]]
 
             layout = [[field, sg.Column(main_column)],

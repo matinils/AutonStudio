@@ -11,7 +11,8 @@ if __name__ == '__main__':
     logo = sg.Image('resources/autonStudioLogo.png')
 
     drive_selection = [sg.Listbox(['Mechanum with Odometry', 'Mechanum without Odometry', 'H-Drive with Odometry',
-                                 'H-Drive without Odometry'], enable_events=True, key='-DRIVETRAIN_SELECTION-', size=(25,4))]
+                                 'H-Drive without Odometry'], enable_events=True, key='-DRIVETRAIN_SELECTION-',
+                                  size=(25,4), default_values='Mechanum with Odometry')]
 
 
     menu_column = [[sg.Text('\n\n')],
@@ -28,7 +29,7 @@ if __name__ == '__main__':
      # f = open("testFile.txt", "x") This can be used to create a file. Very easy. Nice.
 
     # Fields used during the loop
-    drivetrain = None
+    drivetrain = '[Mechanum with Odometry]'
     selectingStartPoint = False
     addingPoint = False
     addingTurn = False
@@ -59,6 +60,7 @@ if __name__ == '__main__':
 
 
     studioWindowActive = False
+    configWindowActive = False
     while True:
         event0, values0 = title_window.read()
 
@@ -66,6 +68,25 @@ if __name__ == '__main__':
 
         if event0 is None or event0 == 'Exit:':
             break
+
+        if event0 == '-DRIVETRAIN_SELECTION-':
+            drivetrain = str(values0)
+
+        if not configWindowActive and event0 == '-CONFIG_BUTTON-':
+            configWindowActive = True
+
+            configLayout = [[sg.Button('Test Button')]]
+            configWindow = sg.Window('Configuration Menu', configLayout)
+
+            while True and configWindowActive:
+                eventC, valuesC = configWindow.Read()
+
+                if eventC is None:
+                    configWindowActive = False
+                    configWindow.Close()
+                    break
+
+
 
         fieldSave = None
         if not studioWindowActive and event0 == '-CONTINUE_BUTTON-':
@@ -113,7 +134,7 @@ if __name__ == '__main__':
                            [sg.Button('Add Robot Operation')],
                            [sg.Button('Simulate Robot Run', key='-SIMULATE_BUTTON-')],
                            [sg.Text('\nEdit Menu:')],
-                           [editing_tabGroup], [sg.Text('\n')], [sg.Button('Clear Field', key='-CLEAR_FIELD_BUTTON-')]]
+                           [editing_tabGroup], [sg.Text('Selected Drivetrain: ' + drivetrain[drivetrain.index('[')  : drivetrain.index(']') +1 ])], [sg.Button('Clear Field', key='-CLEAR_FIELD_BUTTON-')]]
 
             layout = [[field, sg.Column(main_column)],
                       [sg.Button('Back', key='-BACK_BUTTON-'), sg.Button('Exit')]]
