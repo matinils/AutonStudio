@@ -8,7 +8,7 @@ import time
 if __name__ == '__main__':
 
     # Fields used during the loop
-    drivetrain = None
+    drivetrain = '[Mechanum with Odometry]'
     selectingStartPoint = False
     addingPoint = False
     addingTurn = False
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     logo = sg.Image('resources/autonStudioLogo.png')
 
     drive_selection = [sg.Listbox(['Mechanum with Odometry', 'Mechanum without Odometry', 'H-Drive with Odometry',
-                                 'H-Drive without Odometry'], enable_events=True, key='-DRIVETRAIN_SELECTION-', size=(25,4))]
+                                 'H-Drive without Odometry'], enable_events=True, key='-DRIVETRAIN_SELECTION-', size=(25,4), default_values='Mechanum with Odometry')]
 
 
     menu_column = [[sg.Text('\n\n')],
@@ -316,7 +316,7 @@ if __name__ == '__main__':
                 selectingStartPoint = False
             if simulating:
                 for i in range(1, len(points)):
-                    deltas = hf.calculate_movement_per_frame(points[i-1], points[i], inches_per_second=48, frames_per_second=40, pixels_per_inch=5)
+                    deltas = hf.calculate_movement_per_frame(points[i-1], points[i], inches_per_second=48, frames_per_second=60, pixels_per_inch=5)
                     num_movements = math.sqrt((points[i][0] - points[i-1][0])**2 + (points[i][1] - points[i-1][1])**2) / math.hypot(deltas[0], deltas[1])
                     x = points[i-1][0]
                     y = points[i-1][1]
@@ -329,7 +329,7 @@ if __name__ == '__main__':
                         robot_rectangle = field.draw_rectangle(bottom_right=[x+45, y-45], top_left=[x-45, y+45], line_color='black', line_width=3)
                         robot_line = field.draw_line([x+45, y], [x+10, y], 'blue', width=4.0)
                         studio_window.refresh()
-                        sleepTime = 1/40 - (time.time() - start_time)
+                        sleepTime = 1/60 - (time.time() - start_time)
                         if sleepTime < 0:
                             sleepTime = 0
                         time.sleep(sleepTime)
@@ -400,6 +400,7 @@ if __name__ == '__main__':
 
                 robot_rectangle = field.draw_rectangle(bottom_right=bRightRobotRect, top_left=tLeftRobotRect, line_color='black', line_width=3)
                 robot_line = field.draw_line(robotLinePoints[0], robotLinePoints[1], 'blue', width=4.0)
+                field.draw_polygon([[400, 400],[400, 300],[300, 400]], line_color='black', line_width=4, fill_color='')
 
     title_window.close()
 

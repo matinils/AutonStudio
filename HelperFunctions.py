@@ -96,19 +96,22 @@ def sort_turns(turns):
     return turns
 
 
-def calculate_rotation_per_frame(x, y, angle1, angle2, degrees_per_second, frames_per_second):
-    deltas = [[], []]
-    delta_angle = float(angle2) - float(angle1)
-    degrees_per_frame = degrees_per_second / frames_per_second
-    frame_count = int(delta_angle / degrees_per_frame)
-    current_angle = float(angle1)
-    for i in range(0, frame_count):
-        current_angle += degrees_per_frame
-        # Use counterclockwise rotation matrix
-        deltas[0].append(x*math.sin(math.radians(current_angle)) + y*math.cos(math.radians(current_angle)))
-        deltas[1].append(x*math.cos(math.radians(current_angle)) - y*math.sin(math.radians(current_angle)))
-        if i == frame_count - 1:  # Account for uneven division of degrees into frames
-            angle2 = float(angle2)
-            deltas[0][i] = (math.sin(math.radians(angle2-current_angle)) + math.cos(math.radians(angle2-current_angle)))
-            deltas[1][i] = (math.cos(math.radians(angle2-current_angle)) - math.sin(math.radians(angle2-current_angle)))
+def calculate_rotation_per_frame(points, angle1, angle2, degrees_per_second, frames_per_second):
+    deltas = []
+    for p in points:
+        point_deltas = [[], []]
+        delta_angle = float(angle2) - float(angle1)
+        degrees_per_frame = degrees_per_second / frames_per_second
+        frame_count = abs(int(delta_angle / degrees_per_frame))
+        current_angle = float(angle1)
+        for i in range(0, frame_count):
+            current_angle += degrees_per_frame * math.copysign(1.0, delta_angle)
+            # Use clockwise rotation matrix
+            point_deltas[0].append(p[0]*math.sin(math.radians(current_angle)) + p[1]*math.cos(math.radians(current_angle)))
+            point_deltas[1].append(p[0]*math.cos(math.radians(current_angle)) - p[1]*math.sin(math.radians(current_angle)))
+            # if i == frame_count - 1:  # Account for uneven division of degrees into frames
+                # angle2 = float(angle2)
+                # point_deltas[0][i] = (p[0]*math.sin(math.radians(angle2-current_angle)) + p[1]*math.cos(math.radians(angle2-current_angle)))
+                # point_deltas[1][i] = p[0]*(math.cos(math.radians(angle2-current_angle)) - p[1]*math.sin(math.radians(angle2-current_angle)))
+        deltas.append(point_deltas)
     return deltas
