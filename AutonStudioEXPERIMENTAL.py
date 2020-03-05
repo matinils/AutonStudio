@@ -28,6 +28,11 @@ if __name__ == '__main__':
 
      # f = open("testFile.txt", "x") This can be used to create a file. Very easy. Nice.
 
+    # Configurations
+    servos = []
+    additionalMotors = []
+    robotSize = None
+
     # Fields used during the loop
     drivetrain = '[Mechanum with Odometry]'
     selectingStartPoint = False
@@ -75,13 +80,32 @@ if __name__ == '__main__':
         if not configWindowActive and event0 == '-CONFIG_BUTTON-':
             configWindowActive = True
 
-            configLayout = [[sg.Button('Test Button')]]
+            canvas = sg.Graph(canvas_size=[300, 300], graph_bottom_left=[0, 0], graph_top_right=[300, 300],
+                              background_color=None, key='-CANVAS-', enable_events=True)
+
+
+            options_tab0 = [[sg.Text('\n\n\n')], [sg.Button('Add Servo', key='-ADD_SERVO_BUTTON-')],
+                            [sg.Button('Add Hex Core Motor', key='-ADD_HEX_CORE_BUTTON-')],
+                            [sg.Text('\nInput Robot Size in Inches')],
+                            [sg.InputText(enable_events=True, size=[10, 1], key='-ROBOT_SIZE-')]]
+
+            configLayout = [[canvas, sg.Column(options_tab0)], [sg.Button("Back", key='-CONFIG_BACK_BUTTON-')]]
+
             configWindow = sg.Window('Configuration Menu', configLayout)
+            configWindow.finalize()
+
+            canvas.draw_rectangle([50, 250], [250, 50], line_color='black', line_width=5)
+
+            if event0 == '-CANVAS-':
+                print(values0)
+
+
+
 
             while True and configWindowActive:
                 eventC, valuesC = configWindow.Read()
 
-                if eventC is None:
+                if eventC is None or eventC == '-CONFIG_BACK_BUTTON-':
                     configWindowActive = False
                     configWindow.Close()
                     break
