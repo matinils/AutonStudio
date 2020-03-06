@@ -21,8 +21,7 @@ if __name__ == '__main__':
                    drive_selection]
 
     layout2 = [[sg.Text('Welcome to Auton Studio', text_color='Black', font='Courier 20 bold', justification='center',
-                    size=[32,1])], [sg.Text('...where your lazy ass doesn\'t have to write the fucking code, because we already wrote it all for you.', text_color='Black', font='Courier 8', justification='center',
-                    size=[72,2])],[logo, sg.Column(menu_column)]]
+                    size=[32,1])] ,[logo, sg.Column(menu_column)]]
 
     title_window = sg.Window('Title Screen', layout2)
 
