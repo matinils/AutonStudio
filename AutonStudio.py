@@ -51,7 +51,7 @@ if __name__ == '__main__':
     points = []
     turns = []
     velocities = []
-    defaultVelocity = 40
+    defaultVelocity = 48
     convertedPoints = []
     pathStrings = [None]
     turnStrings = [None]
