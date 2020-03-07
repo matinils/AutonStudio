@@ -61,10 +61,12 @@ def calculate_movement_per_frame(point1, point2, inches_per_second, frames_per_s
         y_per_frame = 0
     else:
         x_to_y_ratio = (point2[0] - point1[0]) / (point2[1] - point1[1])
-        y_per_frame = math.sqrt(pixels_per_frame**2 / (x_to_y_ratio**2 + 1)) # Uses derived formula
+        y_per_frame = math.sqrt(pixels_per_frame**2 / (x_to_y_ratio**2 + 1))  # Uses derived formula
         x_per_frame = x_to_y_ratio * y_per_frame
     if point2[1] <= point1[1]:
         y_per_frame *= -1
+        x_per_frame *= -1
+    if point2[0] > point1[0] and y_per_frame == 0.0:
         x_per_frame *= -1
     return [x_per_frame, y_per_frame]
 
