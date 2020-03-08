@@ -1,6 +1,5 @@
 # Python Module HelperFunctions
 import math
-import re
 
 
 def generate_path_string(point1, point2, velocity, heading):
@@ -61,7 +60,7 @@ def calculate_movement_per_frame(point1, point2, inches_per_second, frames_per_s
         y_per_frame = 0
     else:
         x_to_y_ratio = (point2[0] - point1[0]) / (point2[1] - point1[1])
-        y_per_frame = math.sqrt(pixels_per_frame**2 / (x_to_y_ratio**2 + 1))  # Uses derived formula
+        y_per_frame = math.sqrt(pixels_per_frame ** 2 / (x_to_y_ratio ** 2 + 1))  # Uses derived formula
         x_per_frame = x_to_y_ratio * y_per_frame
     if point2[1] <= point1[1]:
         y_per_frame *= -1
@@ -109,11 +108,13 @@ def calculate_rotation_per_frame(points, angle1, angle2, degrees_per_second, fra
         for i in range(0, frame_count):
             current_angle += degrees_per_frame * math.copysign(1.0, delta_angle)
             # Use clockwise rotation matrix
-            point_deltas[0].append(p[0]*math.sin(math.radians(current_angle)) + p[1]*math.cos(math.radians(current_angle)))
-            point_deltas[1].append(p[0]*math.cos(math.radians(current_angle)) - p[1]*math.sin(math.radians(current_angle)))
+            point_deltas[0].append(
+                p[0] * math.sin(math.radians(current_angle)) + p[1] * math.cos(math.radians(current_angle)))
+            point_deltas[1].append(
+                p[0] * math.cos(math.radians(current_angle)) - p[1] * math.sin(math.radians(current_angle)))
             # if i == frame_count - 1:  # Account for uneven division of degrees into frames
-                # angle2 = float(angle2)
-                # point_deltas[0][i] = (p[0]*math.sin(math.radians(angle2-current_angle)) + p[1]*math.cos(math.radians(angle2-current_angle)))
-                # point_deltas[1][i] = p[0]*(math.cos(math.radians(angle2-current_angle)) - p[1]*math.sin(math.radians(angle2-current_angle)))
+            # angle2 = float(angle2)
+            # point_deltas[0][i] = (p[0]*math.sin(math.radians(angle2-current_angle)) + p[1]*math.cos(math.radians(angle2-current_angle)))
+            # point_deltas[1][i] = p[0]*(math.cos(math.radians(angle2-current_angle)) - p[1]*math.sin(math.radians(angle2-current_angle)))
         deltas.append(point_deltas)
     return deltas
