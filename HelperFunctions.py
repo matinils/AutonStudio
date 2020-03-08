@@ -2,17 +2,8 @@
 import math
 
 
-def generate_path_string(point1, point2, velocity, heading):
-    path = '('
-    path += str(point1[0]) + ', ' + str(point1[1]) + ')'
-    path += ' to '
-    path += '(' + str(point2[0]) + ', ' + str(point2[1]) + ')'
-    path += ' going '
-    path += str(velocity) + 'in/s'
-    path += ' at '
-    path += str(heading) + '°'
-    return path
-
+def generate_path_string(p1, p2, velocity, heading):
+    return f'({p1[0]}, {p1[1]}) to ({p2[0]}, {p2[1]}) going {velocity} in/s at {heading}°'
 
 def generate_turn_string(turn, points):
     string = 'Turn to '
