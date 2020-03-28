@@ -5,8 +5,10 @@ import math
 def generate_path_string(p1, p2, velocity, heading):
     return f'({p1[0]}, {p1[1]}) to ({p2[0]}, {p2[1]}) going {velocity} in/s at {heading}°'
 
+
 def generate_turn_string(turn, points):
     return f'Turn to {turn[1]} ° at ({points[turn[0]][0]}, {points[turn[0]][1]})'
+
 
 def convert_coordinates_to_inches(points, pixels_per_inch, field_length_inches):
     converted_points = []
