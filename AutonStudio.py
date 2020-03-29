@@ -57,6 +57,7 @@ if __name__ == '__main__':
     selectedPathNum = None
     selectedTurnNum = None
     startHeading = 0.0
+    export_file = open('AutonPath.java', 'w')
 
     studioWindowActive = False
     configWindowActive = False
@@ -148,6 +149,7 @@ if __name__ == '__main__':
                            [sg.Button('Add Turn', key='-ADD_TURN_BUTTON-')],
                            [sg.Button('Add Robot Operation')],
                            [sg.Button('Simulate Robot Run', key='-SIMULATE_BUTTON-')],
+                           [sg.Button('Export Path', key='-EXPORT_BUTTON-')],
                            [sg.Text('\nEdit Menu:')],
                            [editing_tabGroup], [sg.Text(
                     'Selected Drivetrain: ' + drivetrain[drivetrain.index('['): drivetrain.index(']') + 1])],
@@ -451,6 +453,28 @@ if __name__ == '__main__':
                         time.sleep(sleepTime)
                 simulating = False
 
+            if event1 == '-EXPORT_BUTTON-':
+                export_file = open('AutonPath.java', 'w')
+                export_string = ''
+                export_string += 'package org.firstinspires.ftc.teamcode;\n\n'
+                export_string += 'import com.qualcomm.robotcore.eventloop.opmode.Autonomous;\n\n'
+                export_string += '@Autonomous\n'
+                export_string += 'public class AutonPath extends PositionBasedAuton3 {\n'
+                export_string += 'public void setStartPos(){\n'
+                export_string += f'startX = {convertedPoints[0][0]}; startY = {convertedPoints[0][1]};\n'
+                export_string += f'startOrientation = {startHeading};\n'
+                export_string += '}\n\n'
+                export_string += 'public void drive(){\n'
+                heading = startHeading
+                for i in range(1, len(points)):
+                    for t in turns:
+                        if t[0] == i - 1:
+                            export_string += f'turn({t[1]},TURN_SPEED,positioning);\n'
+                            heading = t[1]
+                    export_string += f'driveToPosition({convertedPoints[i][0]},{convertedPoints[i][1]},DRIVE_SPEED,{heading},0,0,positioning,sensing);\n'
+                export_string += '}}'
+                export_file.write(export_string)
+
             # Add points and turns to list of paths and turns, then display them in the path and turn list
             pathStrings = []
             convertedPoints = hf.convert_coordinates_to_inches(points, pixels_per_inch=5, field_length_inches=144)
@@ -535,4 +559,5 @@ if __name__ == '__main__':
                         point_lines.append(None)
                     point_lines[i - 2] = (field.draw_line(points[i - 1], points[i], color=lineColor, width=2.0))
 
+    export_file.close()
     title_window.close()
