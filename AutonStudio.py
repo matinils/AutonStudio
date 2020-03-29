@@ -28,6 +28,9 @@ if __name__ == '__main__':
 
     # Fields used during the loop
     drivetrain = '[Mechanum with Odometry]'
+    robotSize_X = None
+    robotSize_Y = None
+    configRobot_rectangle = None
     selectingStartPoint = False
     addingPoint = False
     addingTurn = False
@@ -78,8 +81,13 @@ if __name__ == '__main__':
 
             options_tab0 = [[sg.Text('\n\n\n')], [sg.Button('Add Servo', key='-ADD_SERVO_BUTTON-')],
                             [sg.Button('Add Hex Core Motor', key='-ADD_HEX_CORE_BUTTON-')],
-                            [sg.Text('\nInput Robot Size in Inches')],
-                            [sg.InputText(enable_events=True, size=[10, 1], key='-ROBOT_SIZE-')]]
+                            [sg.Text('\nInput Robot Size in Inches (X by Y)')],
+                            [sg.InputText(enable_events=True, size=[4, 1], key='-ROBOT_SIZE_X-'), sg.Text('by'),
+                             sg.InputText(enable_events=True, size=[4, 1], key='-ROBOT_SIZE_Y-')],
+                            [sg.Text('\n\n\n\n\n\n\n\n'), sg.Button('Update', key='-UPDATE_CONFIG-')]]
+
+
+
 
             configLayout = [[canvas, sg.Column(options_tab0)], [sg.Button("Back", key='-CONFIG_BACK_BUTTON-')]]
 
@@ -100,6 +108,16 @@ if __name__ == '__main__':
                     configWindowActive = False
                     configWindow.Close()
                     break
+
+                if eventC == '-UPDATE_CONFIG-':
+                    if configRobot_rectangle is not None:
+                        canvas.delete_figure(configRobot_rectangle)
+                    robotSize_X = int(valuesC['-ROBOT_SIZE_X-']) * 18
+                    robotSize_Y = int(valuesC['-ROBOT_SIZE_Y-']) * 18
+                    configRobot_rectangle = canvas.draw_rectangle([173 - robotSize_X/2, 174 + robotSize_Y/2], [173 + robotSize_X/2, 190 - robotSize_Y/2])
+
+
+                print(robotSize_X)
 
         if event0 is None or event0 == 'Exit:':
             break
