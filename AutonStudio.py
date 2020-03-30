@@ -61,6 +61,10 @@ if __name__ == '__main__':
     selectedTurnNum = None
     startHeading = 0.0
     export_file = open('AutonPath.java', 'w')
+    fieldSaves = []
+    fieldSaves_NAMES = []
+    saves = {}
+
 
     studioWindowActive = False
     configWindowActive = False
@@ -85,7 +89,7 @@ if __name__ == '__main__':
                             [sg.Text('\nInput Robot Size in Inches (X by Y)')],
                             [sg.InputText(enable_events=True, size=[4, 1], key='-ROBOT_SIZE_X-'), sg.Text('by'),
                              sg.InputText(enable_events=True, size=[4, 1], key='-ROBOT_SIZE_Y-')],
-                            [sg.Text('\n\n\n\n\n\n\n\n'), sg.Button('Update', key='-UPDATE_CONFIG-')]]
+                            [sg.Text('\n\n\n\n\n\n\n\n'), sg.Button('Update', key='-UPDATE_CONFIG-', bind_return_key=True)]]
 
 
 
@@ -110,15 +114,15 @@ if __name__ == '__main__':
                     configWindow.Close()
                     break
 
-                if eventC == '-UPDATE_CONFIG-':
+                if eventC == '-UPDATE_CONFIG-' and valuesC['-ROBOT_SIZE_X-'] != '' and valuesC['-ROBOT_SIZE_Y-'] !='':
                     if configRobot_rectangle is not None:
                         canvas.delete_figure(configRobot_rectangle)
                     robotSize_X = int(valuesC['-ROBOT_SIZE_X-']) * 18
                     robotSize_Y = int(valuesC['-ROBOT_SIZE_Y-']) * 18
-                    configRobot_rectangle = canvas.draw_rectangle([173 - robotSize_X/2, 174 + robotSize_Y/2], [173 + robotSize_X/2, 190 - robotSize_Y/2])
+                    configRobot_rectangle = canvas.draw_rectangle([173 - robotSize_X/2, 173 + robotSize_Y/2], [173 + robotSize_X/2, 173 - robotSize_Y/2], line_width=3)
 
 
-                print(robotSize_X)
+
 
         if event0 is None or event0 == 'Exit:':
             break
@@ -130,6 +134,7 @@ if __name__ == '__main__':
 
             pathInfo = sg.Text('None', key='-PATH_INFO-', size=[20, 1])
             turnInfo = sg.Text('None', key='-TURN_INFO-', size=[20, 1])
+            savesInfo = sg.Text('None', key='-SAVE_INFO-', size=[20, 1])
 
             # Each inch is five pixels
             if fieldSave is None:
@@ -137,6 +142,7 @@ if __name__ == '__main__':
                                  background_color='#BAB8B8', key='-FIELD-', enable_events=True)
             else:
                 field = fieldSave
+
 
             paths_tab = [[sg.Listbox(values=[], size=(50, 6), key='-PATH_LIST-')],
                          [sg.Button('Edit Path', key='-EDIT_PATH_BUTTON-'),
@@ -159,10 +165,17 @@ if __name__ == '__main__':
                          [sg.Text('Angle', key='-ANGLE_TEXT-'),
                           sg.InputText(enable_events=True, size=[10, 1], key='-ANGLE_INPUT-')]]
 
+            saves_tab = [[sg.Listbox(values=[], size=(50, 4), key='-SAVES_LIST-')],
+                         [sg.Button('Select Save', key='-SELECT_SAVE_BUTTON-')],
+                          [sg.Text('Selected Turn:')]]
+
             editing_tabGroup = sg.TabGroup(
                 layout=[[sg.Tab(layout=paths_tab, title='Paths'), sg.Tab(layout=turns_tab, title='Turns')]])
 
-            main_column = [[sg.Button('Set Start Point', key='-START_POINT_BUTTON-')],
+            saves_tabGroup = sg.TabGroup(layout=[[sg.Tab(layout=saves_tab, title='Saves')]])
+
+            main_column = [[sg.Button('Save Field', key='-SAVE_BUTTON-')],
+                           [sg.Button('Set Start Point', key='-START_POINT_BUTTON-')],
                            [sg.Button('Add Point', key='-ADD_POINT_BUTTON-')],
                            [sg.Button('Add Turn', key='-ADD_TURN_BUTTON-')],
                            [sg.Button('Add Robot Operation')],
@@ -171,6 +184,7 @@ if __name__ == '__main__':
                            [sg.Text('\nEdit Menu:')],
                            [editing_tabGroup], [sg.Text(
                     'Selected Drivetrain: ' + drivetrain[drivetrain.index('['): drivetrain.index(']') + 1])],
+                           [saves_tabGroup],
                            [sg.Button('Clear Field', key='-CLEAR_FIELD_BUTTON-')]]
 
             layout = [[field, sg.Column(main_column)],
@@ -217,9 +231,22 @@ if __name__ == '__main__':
                 fieldSave = field
                 break
 
+            if event1 == '-SAVE_BUTTON-':
+                curSaveName = sg.PopupGetText('Enter name of field', title='Save as')
+                tempField = field
+                field = sg.Graph(canvas_size=[720, 720], graph_bottom_left=[0, 0], graph_top_right=[720, 720],
+                                 background_color='#BAB8B8', key='-FIELD-', enable_events=True)
+                saves[curSaveName] = tempField
+               # studio_window['-SAVE_INFO-'].update(curSaveName)
+                fieldSaves_NAMES.append(curSaveName)
+
+            print(fieldSaves_NAMES)
+            print(saves)
+
             # Clears all field elements and paths
             if event1 == '-CLEAR_FIELD_BUTTON-' and len(points) > 0:
                 field.delete_figure(robot_rectangle)
+                field.delete_figure(robot_polygon)
                 field.delete_figure(robot_point)
                 field.delete_figure(startPoint_circle)
                 for tc in turn_circles:
