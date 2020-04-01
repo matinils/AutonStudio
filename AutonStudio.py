@@ -7,6 +7,8 @@ import HelperFunctions as hf
 
 if __name__ == '__main__':
 
+    fieldSave_MASTER = None
+
     sg.theme('Dark Green')  # please make your windows colorful
     logo = sg.Image('resources/autonStudioLogo.png')
 
@@ -81,6 +83,8 @@ if __name__ == '__main__':
         if not configWindowActive and event0 == '-CONFIG_BUTTON-':
             configWindowActive = True
 
+
+
             configLayout = [[sg.Button('Test Button')]]
             canvas = sg.Graph(canvas_size=[300, 300], graph_bottom_left=[0, 0], graph_top_right=[350, 350],
                               background_color=None, key='-CANVAS-', enable_events=True)
@@ -103,6 +107,8 @@ if __name__ == '__main__':
             configWindow = sg.Window('Configuration Menu', configLayout)
             configWindow.finalize()
 
+
+
             canvas.draw_rectangle([2, 2], [348, 348], line_color='black', line_width=5)
             canvas.draw_line([13, 20], [337, 20], color='black', width=2)  # 18 pixels is one inch
             canvas.draw_text('18 in.', [162, 13], color='black' , font='Verdana 7 bold')
@@ -119,120 +125,11 @@ if __name__ == '__main__':
                     break
 
                 if eventC == '-GOTO_STUDIO_BUTTON-':
+                    studioWindowActive = False
+                    configWindow.Close()
                     configWindowActive = False
-                    configWindow.close()
-                    studioWindowActive = True
-
-                    pathInfo = sg.Text('None', key='-PATH_INFO-', size=[20, 1], font='verdana')
-                    turnInfo = sg.Text('None', key='-TURN_INFO-', size=[20, 1], font='verdana')
-                    savesInfo = sg.Text('None', key='-SAVE_INFO-', size=[20, 1], font='verdana')
-
-                    # Each inch is five pixel
-                    field = sg.Graph(canvas_size=[720, 720], graph_bottom_left=[0, 0], graph_top_right=[720, 720],
-                                         background_color='#BAB8B8', key='-FIELD-', enable_events=True)
-
-
-                    paths_tab = [[sg.Listbox(values=[], size=(50, 6), key='-PATH_LIST-')],
-                                 [sg.Button('Edit Path', key='-EDIT_PATH_BUTTON-', font='verdana'),
-                                  sg.Button('Round All', key='-ROUND_ALL_BUTTON-', font='verdana')],
-                                 [sg.Text('Selected Path:', font='verdana'), pathInfo],
-                                 [sg.Text('Start X', key='-START_X_TEXT-', font='verdana'),
-                                  sg.InputText(enable_events=True, size=[10, 1], key='-START_X_INPUT-', font='verdana'),
-                                  sg.Text('   Start Y', key='-START_Y_TEXT-', font='verdana'),
-                                  sg.InputText(enable_events=True, size=[10, 1], key='-START_Y_INPUT-',
-                                               font='verdana')],
-                                 [sg.Text('Final X', key='-FINAL_X_TEXT-', font='verdana'),
-                                  sg.InputText(enable_events=True, size=[10, 1], key='-FINAL_X_INPUT-', font='verdana'),
-                                  sg.Text('   Final Y', key='-FINAL_Y_TEXT-', font='verdana'),
-                                  sg.InputText(enable_events=True, size=[10, 1], key='-FINAL_Y_INPUT-',
-                                               font='verdana')],
-                                 [sg.Text('Velocity', font='verdana'),
-                                  sg.InputText(enable_events=True, size=[10, 1], key='-VELOCITY_INPUT-',
-                                               font='verdana')],
-                                 [sg.Button('Deselect', key='-DESELECT_BUTTON-', font='verdana')]]
-
-                    turns_tab = [[sg.Listbox(values=[], size=(50, 6), key='-TURN_LIST-', font='verdana')],
-                                 [sg.Button('Edit Turn', key='-EDIT_TURN_BUTTON-', font='verdana')],
-                                 [sg.Text('Selected Turn:', font='verdana'), turnInfo],
-                                 [sg.Text('Angle', key='-ANGLE_TEXT-', font='verdana'),
-                                  sg.InputText(enable_events=True, size=[10, 1], key='-ANGLE_INPUT-', font='verdana')]]
-
-                    saves_tab = [[sg.Listbox(values=[], size=(50, 4), key='-SAVES_LIST-', font='verdana')],
-                                 [sg.Button('Select Save', key='-SELECT_SAVE_BUTTON-', font='verdana')],
-                                 [sg.Text('Selected Turn:', font='verdana')]]
-
-                    editing_tabGroup = sg.TabGroup(
-                        layout=[[sg.Tab(layout=paths_tab, title='Paths', font='Verdana'),
-                                 sg.Tab(layout=turns_tab, title='Turns', font='Verdana 10 bold')]])
-
-                    saves_tabGroup = sg.TabGroup(layout=[[sg.Tab(layout=saves_tab, title='Saves')]])
-
-                    main_column = [[sg.Button('Save Field', key='-SAVE_BUTTON-', font='verdana')],
-                                   [sg.Button('Set Start Point', key='-START_POINT_BUTTON-', font='verdana')],
-                                   [sg.Button('Add Point', key='-ADD_POINT_BUTTON-', font='verdana')],
-                                   [sg.Button('Add Turn', key='-ADD_TURN_BUTTON-', font='verdana')],
-                                   [sg.Button('Add Robot Operation', font='verdana')],
-                                   [sg.Button('Simulate Robot Run', key='-SIMULATE_BUTTON-', font='verdana')],
-                                   [sg.Button('Export Path', key='-EXPORT_BUTTON-', font='verdana')],
-                                   [sg.Text('\nEdit Menu:', font='verdana')],
-                                   [editing_tabGroup], [sg.Text(
-                            'Selected Drivetrain: ' + drivetrain[drivetrain.index('['): drivetrain.index(']') + 1],
-                            font='verdana')],
-                                   [saves_tabGroup],
-                                   [sg.Button('Clear Field', key='-CLEAR_FIELD_BUTTON-', font='verdana')]]
-
-                    layout = [[sg.Text('Field Configuration: ' + fieldConfiguration, font='Verdana 16 bold')],
-                              [field, sg.Column(main_column)],
-                              [sg.Button('Back', key='-BACK_BUTTON-', font='verdana'),
-                               sg.Button('Go to Configuration Menu', key='-GOTO_CONFIGMENU_BUTTON-', font='verdana'),
-                               sg.Button('Exit', font='verdana')]]
-                    studio_window = sg.Window('EXPERIMENTAL GUI', layout)
-
-                    studio_window.finalize()
-
-                    # Hide certain elements
-                    studio_window['-START_X_TEXT-'].hide_row()
-                    studio_window['-FINAL_X_TEXT-'].hide_row()
-                    studio_window['-VELOCITY_INPUT-'].hide_row()
-                    studio_window['-DESELECT_BUTTON-'].hide_row()
-                    studio_window['-ANGLE_TEXT-'].hide_row()
-
-                    for z in range(1, 31):
-                        field.draw_line([24 * z, 720], [24 * z, 0], 'light grey')
-                        field.draw_line([0, 24 * z], [720, 24 * z], 'light grey')
-                    for x in range(1, 6):
-                        field.draw_line([120 * x, 720], [120 * x, 0], 'black')
-                        field.draw_line([0, 120 * x], [720, 120 * x], 'black')
-
-                    if fieldConfiguration == 'FTC Skystone':
-                        field.draw_line([0, 120], [120, 120], width=6, color='red')
-                        field.draw_line([120, 0], [120, 120], width=6, color='red')
-
-                        field.draw_line([0, 600], [120, 720], width=6, color='blue')
-
-                        field.draw_line([600, 720], [720, 600], width=6, color='red')
-
-                        field.draw_line([0, 360], [240, 360], width=6, color='blue')
-
-                        field.draw_line([480, 360], [720, 360], width=6, color='red')
-
-                        field.draw_line([240, 365], [480, 365], width=6, color='yellow')
-                        field.draw_line([0, 360], [240, 360], width=6, color='blue')
-
-                        field.draw_line([600, 120], [720, 120], width=6, color='blue')
-                        field.draw_line([600, 0], [600, 120], width=6, color='blue')
-
-                        field.draw_rectangle([240, 320], [480, 400], fill_color='#28292B')
-
-                        field.draw_line([240, 365], [480, 365], width=3, color='yellow')
-                        field.draw_line([240, 355], [480, 355], width=3, color='yellow')
-
-                        field.draw_rectangle([240, 690], [332.5, 517.5], fill_color='blue')
-                        field.draw_rectangle([387.5, 690], [480, 517.5], fill_color='red')
-
-                        field.draw_rectangle([241, 240], [261, 0], fill_color='yellow', line_width=0)
-                        for y in range(0, 7):
-                            field.draw_line([241, y * 40], [261, y * 40], width=0.5)
+                    event0 = '-CONTINUE_BUTTON-'
+                    break
 
 
                 if eventC == '-UPDATE_CONFIG-' and valuesC['-ROBOT_SIZE_X-'] != '' and valuesC['-ROBOT_SIZE_Y-'] !='':
@@ -261,12 +158,9 @@ if __name__ == '__main__':
             savesInfo = sg.Text('None', key='-SAVE_INFO-', size=[20, 1], font='verdana')
 
             # Each inch is five pixels
-            if fieldSave is None:
-                field = sg.Graph(canvas_size=[720, 720], graph_bottom_left=[0, 0], graph_top_right=[720, 720],
+            field = sg.Graph(canvas_size=[720, 720], graph_bottom_left=[0, 0], graph_top_right=[720, 720],
                                  background_color='#BAB8B8', key='-FIELD-', enable_events=True)
-            else:
-                field = fieldSave
-
+            fieldSave_MASTER = field
 
             paths_tab = [[sg.Listbox(values=[], size=(50, 6), key='-PATH_LIST-')],
                          [sg.Button('Edit Path', key='-EDIT_PATH_BUTTON-', font='verdana'),
