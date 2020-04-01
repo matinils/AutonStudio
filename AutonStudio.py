@@ -79,6 +79,8 @@ if __name__ == '__main__':
         if not changingWindow:
             event0, values0 = title_window.read()
 
+        changingWindow = False
+
 
         print(str(event0))
 
@@ -131,6 +133,7 @@ if __name__ == '__main__':
 
                 if eventC is None or eventC == '-CONFIG_BACK_BUTTON-':
                     configWindowActive = False
+                    title_window.UnHide()
                     configWindow.Close()
                     break
 
@@ -294,6 +297,7 @@ if __name__ == '__main__':
             if event1 =='-GOTO_CONFIG_BUTTON-':
                 studioWindowActive = False
                 configWindowActive = False
+                studio_window.Hide()
                 changingWindow = True
                 event0 = '-CONFIG_BUTTON-'
                 print(str(event1))
