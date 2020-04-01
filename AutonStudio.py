@@ -68,11 +68,17 @@ if __name__ == '__main__':
     fieldSaves_NAMES = []
     saves = {}
 
+    configWindow = None
+
 
     studioWindowActive = False
     configWindowActive = False
+
     while True:
+        print(str(configWindowActive) + ' ' + str(studioWindowActive))
         event0, values0 = title_window.read()
+
+        print(str(event0))
 
         if event0 is None or event0 == 'Exit:':
             break
@@ -80,6 +86,7 @@ if __name__ == '__main__':
         if event0 == '-DRIVETRAIN_SELECTION-':
             drivetrain = values0
 
+        print(str(event0) + ' REACHED BEGINNING FIRST LOOP')
         if not configWindowActive and event0 == '-CONFIG_BUTTON-':
             configWindowActive = True
 
@@ -117,6 +124,7 @@ if __name__ == '__main__':
                 print(values0)
 
             while True and configWindowActive:
+                print(str(configWindowActive) + ' ' + str(studioWindowActive))
                 eventC, valuesC = configWindow.Read()
 
                 if eventC is None or eventC == '-CONFIG_BACK_BUTTON-':
@@ -206,7 +214,7 @@ if __name__ == '__main__':
                            [sg.Button('Clear Field', key='-CLEAR_FIELD_BUTTON-', font='verdana')]]
 
             layout = [[sg.Text('Field Configuration: ' + fieldConfiguration, font='Verdana 16 bold')], [field, sg.Column(main_column)],
-                      [sg.Button('Back', key='-BACK_BUTTON-', font='verdana'), sg.Button('Go to Configuration Menu', key='-GOTO_CONIFMENU_BUTTON-', font='verdana'),
+                      [sg.Button('Back', key='-BACK_BUTTON-', font='verdana'), sg.Button('Go to Configuration Menu', key='-GOTO_CONFIG_BUTTON-', font='verdana'),
                        sg.Button('Exit', font='verdana')]]
             studio_window = sg.Window('EXPERIMENTAL GUI', layout)
 
@@ -265,6 +273,7 @@ if __name__ == '__main__':
 
 
         while True and studioWindowActive:  # Event Loop
+            print(str(configWindowActive) + ' ' + str(studioWindowActive))
             event1, values1 = studio_window.read()  # can also be written as event, values = window()
 
             # Print to console the event and values
@@ -280,6 +289,15 @@ if __name__ == '__main__':
                 title_window.close()
                 break
 
+            if event1 =='-GOTO_CONFIG_BUTTON-':
+                event0 = '-CONFIG_BUTTON-'
+                studioWindowActive = False
+                configWindowActive = False
+                studio_window.Hide()
+                print(str(event1))
+                break
+
+
             # Back Condition
             if event1 is None or event1 == '-BACK_BUTTON-':
                 studioWindowActive = False
@@ -287,6 +305,11 @@ if __name__ == '__main__':
                 title_window.UnHide()
                 fieldSave = field
                 break
+
+
+
+
+
 
            # if event1 == '-SAVE_BUTTON-':
            #     curSaveName = sg.PopupGetText('Enter name of field', title='Save as')
@@ -462,6 +485,8 @@ if __name__ == '__main__':
                     for c in turn_circles:
                         field.delete_figure(c)
                     turn_circles.clear()
+
+
 
             # Simulate the robot running through the path
             if event1 == '-SIMULATE_BUTTON-':
@@ -660,6 +685,7 @@ if __name__ == '__main__':
                     if len(point_lines) < i - 1:
                         point_lines.append(None)
                     point_lines[i - 2] = (field.draw_line(points[i - 1], points[i], color=lineColor, width=2.0))
+
 
     export_file.close()
     title_window.close()
