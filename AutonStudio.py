@@ -68,15 +68,17 @@ if __name__ == '__main__':
     fieldSaves_NAMES = []
     saves = {}
 
-    configWindow = None
 
 
     studioWindowActive = False
     configWindowActive = False
+    changingWindow = False
 
     while True:
         print(str(configWindowActive) + ' ' + str(studioWindowActive))
-        event0, values0 = title_window.read()
+        if not changingWindow:
+            event0, values0 = title_window.read()
+
 
         print(str(event0))
 
@@ -290,10 +292,10 @@ if __name__ == '__main__':
                 break
 
             if event1 =='-GOTO_CONFIG_BUTTON-':
-                event0 = '-CONFIG_BUTTON-'
                 studioWindowActive = False
                 configWindowActive = False
-                studio_window.Hide()
+                changingWindow = True
+                event0 = '-CONFIG_BUTTON-'
                 print(str(event1))
                 break
 
