@@ -34,10 +34,7 @@ if __name__ == '__main__':
     robotSize_Y = None
     fieldConfiguration = 'None'
     configRobot_rectangle = None
-    selectingStartPoint = False
-    addingPoint = False
-    addingTurn = False
-    simulating = False
+    selectedOperation = None
     pathEditUpdated = False
     turnEditUpdated = False
     startPoint_circle = None
@@ -51,6 +48,8 @@ if __name__ == '__main__':
     robot_polygon = None
     point_lines = []
     turn_circles = []
+    delete_point_circles = []
+    delete_turn_circles = []
     turnIndicator_circles = []
     turnIndicator_text = []
     points = []
@@ -75,7 +74,6 @@ if __name__ == '__main__':
     changingWindow = False
 
     while True:
-        print(str(configWindowActive) + ' ' + str(studioWindowActive))
         if not changingWindow:
             event0, values0 = title_window.read()
 
@@ -90,7 +88,6 @@ if __name__ == '__main__':
         if event0 == '-DRIVETRAIN_SELECTION-':
             drivetrain = values0
 
-        print(str(event0) + ' REACHED BEGINNING FIRST LOOP')
         if not configWindowActive and event0 == '-CONFIG_BUTTON-':
             configWindowActive = True
 
@@ -124,11 +121,7 @@ if __name__ == '__main__':
             canvas.draw_line([13, 20], [337, 20], color='black', width=2)  # 18 pixels is one inch
             canvas.draw_text('18 in.', [162, 13], color='black' , font='Verdana 7 bold')
 
-            if event0 == '-CANVAS-':
-                print(values0)
-
             while True and configWindowActive:
-                print(str(configWindowActive) + ' ' + str(studioWindowActive))
                 eventC, valuesC = configWindow.Read()
 
                 if eventC is None or eventC == '-CONFIG_BACK_BUTTON-':
@@ -207,8 +200,8 @@ if __name__ == '__main__':
 
             main_column = [[sg.Button('Save Field', key='-SAVE_BUTTON-', font='verdana')],
                            [sg.Button('Set Start Point', key='-START_POINT_BUTTON-', font='verdana')],
-                           [sg.Button('Add Point', key='-ADD_POINT_BUTTON-', font='verdana')],
-                           [sg.Button('Add Turn', key='-ADD_TURN_BUTTON-', font='verdana')],
+                           [sg.Button('Add Point', key='-ADD_POINT_BUTTON-', font='verdana'), sg.Button('Delete Point', key='-DELETE_POINT_BUTTON-', font='verdana')],
+                           [sg.Button('Add Turn', key='-ADD_TURN_BUTTON-', font='verdana'), sg.Button('Delete Turn', key='-DELETE_TURN_BUTTON-', font='verdana')],
                            [sg.Button('Add Robot Operation', font='verdana')],
                            [sg.Button('Simulate Robot Run', key='-SIMULATE_BUTTON-', font='verdana')],
                            [sg.Button('Export Path', key='-EXPORT_BUTTON-', font='verdana')],
@@ -270,15 +263,7 @@ if __name__ == '__main__':
                     field.draw_line([241, y*40],[261, y*40], width=0.5)
 
 
-
-
-
-
-
-
-
         while True and studioWindowActive:  # Event Loop
-            print(str(configWindowActive) + ' ' + str(studioWindowActive))
             event1, values1 = studio_window.read()  # can also be written as event, values = window()
 
             # Print to console the event and values
@@ -311,23 +296,6 @@ if __name__ == '__main__':
                 title_window.UnHide()
                 fieldSave = field
                 break
-
-
-
-
-
-
-           # if event1 == '-SAVE_BUTTON-':
-           #     curSaveName = sg.PopupGetText('Enter name of field', title='Save as')
-           #     tempField = field
-           #     field = sg.Graph(canvas_size=[720, 720], graph_bottom_left=[0, 0], graph_top_right=[720, 720],
-           #                      background_color='#BAB8B8', key='-FIELD-', enable_events=True)
-           #     saves[curSaveName] = tempField
-           #    # studio_window['-SAVE_INFO-'].update(curSaveName)
-           #     fieldSaves_NAMES.append(curSaveName)
-
-           # print(fieldSaves_NAMES)
-           # print(saves)
 
             # Clears all field elements and paths
             if event1 == '-CLEAR_FIELD_BUTTON-' and len(points) > 0:
@@ -400,11 +368,13 @@ if __name__ == '__main__':
 
             # Deselect the current path
             if event1 == '-DESELECT_BUTTON-':
+                selectedPathNum = None
+            if selectedPathNum is None:
                 studio_window['-PATH_INFO-'].update('None')
                 studio_window['-START_X_TEXT-'].hide_row()
                 studio_window['-FINAL_X_TEXT-'].hide_row()
                 studio_window['-DESELECT_BUTTON-'].hide_row()
-                selectedPathNum = None
+                studio_window['-VELOCITY_INPUT-'].hide_row()
 
             # Choose which turn to edit
             if event1 == '-EDIT_TURN_BUTTON-':
@@ -416,6 +386,9 @@ if __name__ == '__main__':
                         studio_window['-TURN_INFO-'].update('Turn #' + str(counter))
                         selectedTurnNum = counter
 
+            if selectedTurnNum is None:
+                studio_window['-ANGLE_TEXT-'].hide_row()
+                studio_window['-TURN_INFO-'].update('None')
             # Show the entry fields for editing the turn
             if selectedTurnNum is not None and not turnEditUpdated:
                 studio_window['-ANGLE_TEXT-'].unhide_row()
@@ -428,11 +401,8 @@ if __name__ == '__main__':
 
             # Select start point and draw the circle for it and add it to points
             if event1 == '-START_POINT_BUTTON-':
-                selectingStartPoint = True
-                addingPoint = False
-                addingTurn = False
-                simulating = False
-            if selectingStartPoint:
+                selectedOperation = 'selectingStartPoint'
+            if selectedOperation == 'selectingStartPoint':
                 if event1 == '-FIELD-':
                     field.delete_figure(startPoint_circle)
                     startPoint_circle = field.draw_circle([values1['-FIELD-'][0], values1['-FIELD-'][1]], 5)
@@ -443,27 +413,69 @@ if __name__ == '__main__':
                     startHeading = float(hf.clean_coordinates(sg.PopupGetText(
                         message='Enter start heading, 0 is straight up, 90 is to the right, -90 is to the left',
                         title='Heading selection')))
-                    selectingStartPoint = False
+                    selectedOperation = None
 
             # Select next point and and it to list of points
             if event1 == '-ADD_POINT_BUTTON-' and len(points) > 0:
-                addingPoint = True
-                selectingStartPoint = False
-                addingTurn = False
-                simulating = False
-            if addingPoint:
+                selectedOperation = 'addingPoint'
+            if selectedOperation == 'addingPoint':
                 if event1 == '-FIELD-':
                     points.append([values1['-FIELD-'][0], values1['-FIELD-'][1]])
                     velocities.append(defaultVelocity)
-                    addingPoint = False
+                    selectedOperation = None
+
+            if event1 == '-DELETE_POINT_BUTTON-' and len(points) > 0:
+                selectedOperation = 'deletingPoint'
+            if selectedOperation == 'deletingPoint':
+                selectedTurnNum = None
+                selectedPathNum = None
+                if len(delete_point_circles) == 0:
+                    for p in points[1:]:
+                        delete_point_circles.append(field.draw_circle(p, 10, fill_color='red'))
+                if event1 == '-FIELD-':
+                    for p in points[1:]:
+                        if abs(values1['-FIELD-'][0] - p[0]) < 10 and abs(values1['-FIELD-'][1] - p[1]) < 10:
+                            indx = points.index(p)
+                            points.remove(p)
+                            turn_to_remove = None
+                            for t in turns:
+                                if indx == t[0]:
+                                    turn_to_remove = t
+                                if indx < t[0]:
+                                    t[0] = t[0] - 1
+                            if turn_to_remove is not None:
+                                turns.remove(turn_to_remove)
+                            selectedOperation = None
+            if not selectedOperation == 'deletingPoint':
+                if len(delete_point_circles) > 0:
+                    for c in delete_point_circles:
+                        field.delete_figure(c)
+                    delete_point_circles.clear()
+
+            if event1 == '-DELETE_TURN_BUTTON-' and len(turns) > 0:
+                selectedOperation = 'deletingTurn'
+            if selectedOperation == 'deletingTurn':
+                selectedTurnNum = None
+                selectedPathNum = None
+                if len(delete_turn_circles) == 0:
+                    for t in turns:
+                        delete_turn_circles.append(field.draw_circle(points[t[0]], 10, fill_color='red'))
+                if event1 == '-FIELD-':
+                    for t in turns:
+                        if abs(values1['-FIELD-'][0] - points[t[0]][0]) < 10 and abs(values1['-FIELD-'][1] - points[t[0]][1]) < 10:
+                            turns.remove(t)
+                            selectedOperation = None
+            if not selectedOperation == 'deletingTurn':
+                print(len(delete_turn_circles))
+                if len(delete_turn_circles) > 0:
+                    for c in delete_turn_circles:
+                        field.delete_figure(c)
+                    delete_turn_circles.clear()
 
             # Select a spot to add a turn and add it to list of turns
             if event1 == '-ADD_TURN_BUTTON-':
-                addingTurn = True
-                addingPoint = False
-                selectingStartPoint = False
-                simulating = False
-            if addingTurn:
+                selectedOperation = 'addingTurn'
+            if selectedOperation == 'addingTurn':
                 if len(turn_circles) == 0:
                     for i in range(0, len(points)):
                         drawCircle = True
@@ -478,15 +490,14 @@ if __name__ == '__main__':
                         for t in turns:
                             if t[0] == i:
                                 allowPointToBeSelected = False
-                        if abs(values1['-FIELD-'][0] - points[i][0]) < 10 and abs(values1['-FIELD-'][1]) - points[i][
-                            1] < 10 and allowPointToBeSelected:
+                        if abs(values1['-FIELD-'][0] - points[i][0]) < 10 and abs(values1['-FIELD-'][1] - points[i][1]) < 10 and allowPointToBeSelected:
                             angle = sg.PopupGetText('Enter turn angle in degrees', title='Turn Angle Entry')
                             if angle is not None:
                                 turns.append([i, hf.clean_coordinates(angle)])
-                                addingTurn = False
+                                selectedOperation = None
                             else:
                                 sg.PopupAnnoying('ERROR: Please enter a value')
-            if not addingTurn:
+            if not selectedOperation == 'addingTurn':
                 if len(turn_circles) > 0:
                     for c in turn_circles:
                         field.delete_figure(c)
@@ -496,11 +507,8 @@ if __name__ == '__main__':
 
             # Simulate the robot running through the path
             if event1 == '-SIMULATE_BUTTON-':
-                simulating = True
-                addingTurn = False
-                addingPoint = False
-                selectingStartPoint = False
-            if simulating:
+                selectedOperation = 'simulating'
+            if selectedOperation == 'simulating':
                 prevTurn = None
                 robotCBr = [45, -45]  # Bottom right corner and go clockwise
                 robotCBl = [-45, -45]
@@ -584,29 +592,34 @@ if __name__ == '__main__':
                         if sleepTime < 0:
                             sleepTime = 0
                         time.sleep(sleepTime)
-                simulating = False
+                selectedOperation = None
 
-            if event1 == '-EXPORT_BUTTON-' and drivetrain == '[Mechanum w/ Odometry]':
-                export_file = open('AutonPath.java', 'w')
-                export_string = ''
-                export_string += 'package org.firstinspires.ftc.teamcode;\n\n'
-                export_string += 'import com.qualcomm.robotcore.eventloop.opmode.Autonomous;\n\n'
-                export_string += '@Autonomous\n'
-                export_string += 'public class AutonPath extends PositionBasedAuton3 {\n'
-                export_string += 'public void setStartPos(){\n'
-                export_string += f'startX = {convertedPoints[0][0]}; startY = {convertedPoints[0][1]};\n'
-                export_string += f'startOrientation = {startHeading};\n'
-                export_string += '}\n\n'
-                export_string += 'public void drive(){\n'
-                heading = startHeading
-                for i in range(1, len(points)):
-                    for t in turns:
-                        if t[0] == i - 1:
-                            export_string += f'turn({t[1]},TURN_SPEED,positioning);\n'
-                            heading = t[1]
-                    export_string += f'driveToPosition({convertedPoints[i][0]},{convertedPoints[i][1]},DRIVE_SPEED,{heading},0,0,positioning,sensing);\n'
-                export_string += '}}'
-                export_file.write(export_string)
+            if event1 == '-EXPORT_BUTTON-':
+                if len(convertedPoints) > 0:
+                    export_location = sg.PopupGetFolder('Choose Export Location') + '/AutonPath.java'
+                    export_file = open(export_location, 'w')
+                    export_string = ''
+                    export_string += 'package org.firstinspires.ftc.teamcode;\n\n'
+                    export_string += 'import com.qualcomm.robotcore.eventloop.opmode.Autonomous;\n\n'
+                    export_string += '@Autonomous\n'
+                    export_string += 'public class AutonPath extends PositionBasedAuton3 {\n'
+                    export_string += 'public void setStartPos(){\n'
+                    export_string += f'startX = {convertedPoints[0][0]}; startY = {convertedPoints[0][1]};\n'
+                    export_string += f'startOrientation = {startHeading};\n'
+                    export_string += '}\n\n'
+                    export_string += 'public void drive(){\n'
+                    heading = startHeading
+                    for i in range(1, len(points)):
+                        for t in turns:
+                            if t[0] == i - 1:
+                                export_string += f'turn({t[1]},TURN_SPEED,positioning);\n'
+                                heading = t[1]
+                        export_string += f'driveToPosition({convertedPoints[i][0]},{convertedPoints[i][1]},DRIVE_SPEED,{heading},0,0,positioning,sensing);\n'
+                    export_string += '}}'
+                    export_file.write(export_string)
+                    sg.Popup('Export Successful!')
+                else:
+                    sg.Popup('No Paths to Export')
 
             # Add points and turns to list of paths and turns, then display them in the path and turn list
             pathStrings = []
@@ -632,10 +645,10 @@ if __name__ == '__main__':
             studio_window['-TURN_LIST-'].update(values=turnStrings)
 
             # Draw turn indicators
+            for i in range(len(turnIndicator_circles)):
+                field.delete_figure(turnIndicator_circles[i])
+                field.delete_figure(turnIndicator_text[i])
             for i in range(0, len(turns)):
-                if len(turnIndicator_circles) > i:
-                    field.delete_figure(turnIndicator_circles[i])
-                    field.delete_figure(turnIndicator_text[i])
                 if len(turnIndicator_circles) < i + 1:
                     turnIndicator_circles.append(None)
                     turnIndicator_text.append(None)
@@ -673,25 +686,25 @@ if __name__ == '__main__':
                 robot_point = field.draw_point(point=robotPoint, color='yellow', size=15)
 
                 # Draw lines between all points
+                print(points)
                 if len(points) > 0:
                     field.delete_figure(startPoint_circle)
                     startPoint_circle = field.draw_circle(points[0], 5)
+                field.delete_figure(startPoint_line)
                 if len(points) > 1:
                     lineColor = 'black'
                     if selectedPathNum == 1:
                         lineColor = 'yellow'
-                    field.delete_figure(startPoint_line)
                     startPoint_line = field.draw_line(points[0], points[1], color=lineColor, width=2.0)
+                for pl in point_lines:
+                    field.delete_figure(pl)
                 for i in range(2, len(points)):
-                    if len(point_lines) > i - 2:
-                        field.delete_figure(point_lines[i - 2])
                     lineColor = 'black'
                     if selectedPathNum == i:
                         lineColor = 'yellow'
                     if len(point_lines) < i - 1:
                         point_lines.append(None)
                     point_lines[i - 2] = (field.draw_line(points[i - 1], points[i], color=lineColor, width=2.0))
-
 
     export_file.close()
     title_window.close()
