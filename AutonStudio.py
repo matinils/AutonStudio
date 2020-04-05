@@ -198,18 +198,17 @@ if __name__ == '__main__':
 
             saves_tabGroup = sg.TabGroup(layout=[[sg.Tab(layout=saves_tab, title='Saves')]])
 
-            main_column = [[sg.Button('Save Field', key='-SAVE_BUTTON-', font='verdana')],
+            main_column = [[sg.Button('Save Field', key='-SAVE_BUTTON-', font='verdana'), sg.Button('Load Field', key='-LOAD_BUTTON-', font='verdana')],
                            [sg.Button('Set Start Point', key='-START_POINT_BUTTON-', font='verdana')],
                            [sg.Button('Add Point', key='-ADD_POINT_BUTTON-', font='verdana'), sg.Button('Delete Point', key='-DELETE_POINT_BUTTON-', font='verdana')],
                            [sg.Button('Add Turn', key='-ADD_TURN_BUTTON-', font='verdana'), sg.Button('Delete Turn', key='-DELETE_TURN_BUTTON-', font='verdana')],
                            [sg.Button('Add Robot Operation', font='verdana')],
                            [sg.Button('Simulate Robot Run', key='-SIMULATE_BUTTON-', font='verdana')],
-                           [sg.Button('Export Path', key='-EXPORT_BUTTON-', font='verdana')],
                            [sg.Text('\nEdit Menu:', font='verdana')],
-                           [editing_tabGroup], [sg.Text(
-                    'Selected Drivetrain: ' + drivetrain[drivetrain.index('['): drivetrain.index(']') + 1], font='verdana')],
-                           [saves_tabGroup],
-                           [sg.Button('Clear Field', key='-CLEAR_FIELD_BUTTON-', font='verdana')]]
+                           [editing_tabGroup],
+                           [sg.Text('Selected Drivetrain: ' + drivetrain[drivetrain.index('['): drivetrain.index(']') + 1], font='verdana')],
+                           [sg.Button('Clear Field', key='-CLEAR_FIELD_BUTTON-', font='verdana')],
+                           [sg.Button('Export Field', key='-EXPORT_BUTTON-', font='verdana')]]
 
             layout = [[sg.Text('Field Configuration: ' + fieldConfiguration, font='Verdana 16 bold')], [field, sg.Column(main_column)],
                       [sg.Button('Back', key='-BACK_BUTTON-', font='verdana'), sg.Button('Go to Configuration Menu', key='-GOTO_CONFIG_BUTTON-', font='verdana'),
@@ -596,30 +595,71 @@ if __name__ == '__main__':
 
             if event1 == '-EXPORT_BUTTON-':
                 if len(convertedPoints) > 0:
-                    export_location = sg.PopupGetFolder('Choose Export Location') + '/AutonPath.java'
-                    export_file = open(export_location, 'w')
-                    export_string = ''
-                    export_string += 'package org.firstinspires.ftc.teamcode;\n\n'
-                    export_string += 'import com.qualcomm.robotcore.eventloop.opmode.Autonomous;\n\n'
-                    export_string += '@Autonomous\n'
-                    export_string += 'public class AutonPath extends PositionBasedAuton3 {\n'
-                    export_string += 'public void setStartPos(){\n'
-                    export_string += f'startX = {convertedPoints[0][0]}; startY = {convertedPoints[0][1]};\n'
-                    export_string += f'startOrientation = {startHeading};\n'
-                    export_string += '}\n\n'
-                    export_string += 'public void drive(){\n'
-                    heading = startHeading
-                    for i in range(1, len(points)):
-                        for t in turns:
-                            if t[0] == i - 1:
-                                export_string += f'turn({t[1]},TURN_SPEED,positioning);\n'
-                                heading = t[1]
-                        export_string += f'driveToPosition({convertedPoints[i][0]},{convertedPoints[i][1]},DRIVE_SPEED,{heading},0,0,positioning,sensing);\n'
-                    export_string += '}}'
-                    export_file.write(export_string)
-                    sg.Popup('Export Successful!')
+                    export_location = ''
+                    while export_location == '':
+                        export_location = sg.PopupGetFolder('Choose Export Location')
+                    if export_location is not None:
+                        export_location = export_location + '/AutonPath.java'
+                        export_file = open(export_location, 'w')
+                        export_string = ''
+                        export_string += 'package org.firstinspires.ftc.teamcode;\n\n'
+                        export_string += 'import com.qualcomm.robotcore.eventloop.opmode.Autonomous;\n\n'
+                        export_string += '@Autonomous\n'
+                        export_string += 'public class AutonPath extends PositionBasedAuton3 {\n'
+                        export_string += 'public void setStartPos(){\n'
+                        export_string += f'startX = {convertedPoints[0][0]}; startY = {convertedPoints[0][1]};\n'
+                        export_string += f'startOrientation = {startHeading};\n'
+                        export_string += '}\n\n'
+                        export_string += 'public void drive(){\n'
+                        heading = startHeading
+                        for i in range(1, len(points)):
+                            for t in turns:
+                                if t[0] == i - 1:
+                                    export_string += f'turn({t[1]},TURN_SPEED,positioning);\n'
+                                    heading = t[1]
+                            export_string += f'driveToPosition({convertedPoints[i][0]},{convertedPoints[i][1]},DRIVE_SPEED,{heading},0,0,positioning,sensing);\n'
+                        export_string += '}}'
+                        export_file.write(export_string)
+                        sg.Popup('Export Successful!')
                 else:
                     sg.Popup('No Paths to Export')
+
+            if event1 == '-SAVE_BUTTON-':
+                save_name = ''
+                while save_name == '':
+                    save_name = sg.PopupGetText('Name:')
+                if save_name is not None:
+                    save_location = sg.PopupGetFolder('', no_window=True)
+                    save_location = save_location + '/' + save_name + '.auton'
+                    save_file = open(save_location, 'w')
+                    save_string = ''
+                    save_string += str(len(points)) + '\n'
+                    for p in points:
+                        save_string += f'{p[0]} {p[1]}\n'
+                    save_string += str(len(turns)) + '\n'
+                    for t in turns:
+                        save_string += f'{t[0]} {t[1]}\n'
+                    save_file.write(save_string)
+                    save_file.close()
+
+            if event1 == '-LOAD_BUTTON-':
+                choice = sg.PopupYesNo('Do you want to load a save?\nYou will lose any unsaved progress if you do so.')
+                if choice == 'Yes':
+                    points.clear()
+                    turns.clear()
+                    velocities.clear()
+                    save_location = sg.PopupGetFile('Hello', no_window=True, file_types=(("Auton Files", "*.auton"),))
+                    save_file = open(save_location, 'r')
+                    num_points = int(save_file.readline())
+                    for i in range(num_points):
+                        line = save_file.readline().split()
+                        points.append([int(line[0]), int(line[1])])
+                        velocities.append(defaultVelocity)
+                    num_turns = int(save_file.readline())
+                    for i in range(num_turns):
+                        line = save_file.readline().split()
+                        turns.append([int(line[0]), int(line[1])])
+                    save_file.close()
 
             # Add points and turns to list of paths and turns, then display them in the path and turn list
             pathStrings = []
